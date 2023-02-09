@@ -14,15 +14,25 @@ model User {
   id      Int      @id @default(autoincrement())
   email   String   @unique
   name    String
-  role    Role    @relation(fields: [roleId], references: [id])
-  roleId  Int
+  passwordHash String
   companies Company[]
+  owner RoleList[] @relation(name: "owner")
+  guest RoleList[] @relation(name: "guest")
 }
 
 model Role {
   id      Int      @id @default(autoincrement())
   description    String
-  users User[]
+}
+
+model RoleList {
+  id    Int      @id @default(autoincrement())
+  owner User @relation(fields: [ownerId], references: [id], name: "owner")
+  ownerId Int
+  guest User @relation(fields: [guestId], references: [id], name: "guest")
+  guestId Int
+  company Company @relation(fields: [companyId], references: [id])
+  companyId Int 
 }
 
 model Company {
@@ -31,6 +41,7 @@ model Company {
   user    User @relation(fields: [userId], references: id)
   userId  Int
   campus Campus[]
+  roleList RoleList[]
 }
 
 model Campus {

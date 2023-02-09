@@ -1,5 +1,5 @@
 interface Props {
-    error: string | undefined;
+    error: string | undefined | null;
 }
 
 export default function FormError({ error }: Props) {

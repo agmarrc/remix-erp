@@ -3,8 +3,15 @@ import { Form, Link, useActionData } from "@remix-run/react";
 import FormError from "~/components/FormError";
 
 import TextInput from "~/components/TextInput";
+import { db } from "~/utils/db.server";
 import { badRequest } from "~/utils/request.server";
-import { createUserSession, login } from "~/utils/session.server";
+import { createUserSession, login, register } from "~/utils/session.server";
+
+function validateName(name: unknown) {
+    if (typeof name !== "string" || name === "") {
+        return `Ingresa un nombre valido`;
+    }
+}
 
 function validateEmail(email: unknown) {
     if (typeof email !== "string" || email.length < 3) {
@@ -13,17 +20,19 @@ function validateEmail(email: unknown) {
 }
 
 function validatePassword(password: unknown) {
-    if (password === "") {
-        return `Ingresa una contraseña`;
+    if (typeof password != "string" || password.length < 8) {
+        return `La contraseña debe tener al menos 8 caracteres`;
     }
 }
 
 export const action = async ({ request }: ActionArgs) => {
     const form = await request.formData();
+    const name = form.get("name");
     const email = form.get("email");
     const password = form.get("password");
 
     if (
+        typeof name !== "string" ||
         typeof email !== "string" ||
         typeof password !== "string"
     ) {
@@ -34,8 +43,9 @@ export const action = async ({ request }: ActionArgs) => {
         });
     }
 
-    const fields = { email, password };
+    const fields = { name, email, password };
     const fieldErrors = {
+        name: validateName(name),
         email: validateEmail(email),
         password: validatePassword(password),
     };
@@ -47,15 +57,24 @@ export const action = async ({ request }: ActionArgs) => {
         });
     }
 
-    const user = await login({ email, password });
+    const userExists = await db.user.findFirst({
+        where: { email },
+    });
+    if (userExists) {
+        return badRequest({
+            fieldErrors: null,
+            fields,
+            formError: `El correo ${email} ya está en uso`,
+        });
+    }
+    const user = await register({ name, email, password });
     if (!user) {
         return badRequest({
             fieldErrors: null,
             fields,
-            formError: `Email o contraseña incorrecta`,
+            formError: `Something went wrong trying to create a new user.`,
         });
     }
-    // if there is a user, create their session and redirect to /
     return createUserSession(`${user.id}`, '/');
 }
 
@@ -71,9 +90,13 @@ export default function Login() {
                 <div className="w-full bg-white rounded-lg shadow dark:border md:mt-0 sm:max-w-md xl:p-0 dark:bg-gray-800 dark:border-gray-700">
                     <div className="p-6 space-y-4 md:space-y-6 sm:p-8">
                         <h1 className="text-xl font-bold leading-tight tracking-tight text-gray-900 md:text-2xl dark:text-white">
-                            Entra a tu cuenta
+                            Crea tu cuenta
                         </h1>
                         <Form className="space-y-4 md:space-y-6" method="post">
+                            <div>
+                                <TextInput id="name" labelText="Tu nombre" name="name" placeholder="Marco García" type="text" />
+                                <FormError error={actionData?.fieldErrors?.name} />
+                            </div>
                             <div>
                                 <TextInput id="email" labelText="Tu email" name="email" placeholder="correo@empresa.com" type="email" />
                                 <FormError error={actionData?.fieldErrors?.email} />
@@ -82,12 +105,9 @@ export default function Login() {
                                 <TextInput id="password" labelText="Tu contraseña" name="password" placeholder="••••••••" type="password" />
                                 <FormError error={actionData?.fieldErrors?.password} />
                             </div>
-                            <div className="flex items-center justify-between">
-                                <Link to="#" className="text-sm font-medium text-primary-600 hover:underline dark:text-primary-500">¿Olvidaste tu contraseña?</Link>
-                            </div>
                             <button type="submit" className="w-full text-white bg-primary-600 hover:bg-primary-700 focus:ring-4 focus:outline-none focus:ring-primary-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800">Ingresar</button>
                             <p className="text-sm font-light text-gray-500 dark:text-gray-400">
-                                ¿Aún no tienes una cuenta? <Link to="/auth/register" className="font-medium text-primary-600 hover:underline dark:text-primary-500">Registrate</Link>
+                                ¿Ya tienes cuenta? <Link to="/auth/login" className="font-medium text-primary-600 hover:underline dark:text-primary-500">Inicia sesión</Link>
                             </p>
                             <FormError error={actionData?.formError} />
                         </Form>
