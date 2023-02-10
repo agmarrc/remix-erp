@@ -1,5 +1,6 @@
 import { ActionArgs, redirect } from "@remix-run/node";
-import { Form, Link, useActionData } from "@remix-run/react";
+import { Form, useActionData } from "@remix-run/react";
+import BackButton from "~/components/BackButton";
 import FormError from "~/components/FormError";
 import { db } from "~/utils/db.server";
 import { badRequest } from "~/utils/request.server";
@@ -48,15 +49,17 @@ export default function NewCompany() {
     const actionData = useActionData<typeof action>();
 
     return (
-        <Form method="post">
-            <div className="my-6">
-                <input type="text" name="name" placeholder="Nombre de la empresa" className="input input-bordered w-full max-w-xs" />
-                <FormError error={actionData?.fieldErrors?.name} />
-            </div>
-            <div className="modal-action">
-                <Link to="/dashboard/companies" className="btn">Cancelar</Link>
-                <button type="submit" className="btn btn-primary">Guardar</button>
-            </div>
-        </Form>
+        <div>
+            <BackButton uri="/dashboard/companies" />
+            <Form method="post">
+                <div className="my-6">
+                    <input type="text" name="name" placeholder="Nombre de la empresa" className="input input-bordered w-full max-w-xs" />
+                    <FormError error={actionData?.fieldErrors?.name} />
+                </div>
+                <div className="modal-action">
+                    <button type="submit" className="btn btn-primary">Guardar</button>
+                </div>
+            </Form>
+        </div>
     );
 }

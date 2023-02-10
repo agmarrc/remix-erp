@@ -19,7 +19,9 @@ export default function Dashboard() {
             <div className="tabs mt-10">
                 <Link to="companies" className="tab tab-lifted">Empresas</Link>
             </div>
+            <div className="mx-2">
             <Outlet />
+            </div>
         </div>
     </>
 }

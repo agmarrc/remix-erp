@@ -1,6 +1,7 @@
 import { ActionArgs, json, LoaderArgs, redirect } from "@remix-run/node";
-import { Form, useCatch, useLoaderData, useParams } from "@remix-run/react";
+import { Form, Link, useCatch, useLoaderData, useParams } from "@remix-run/react";
 import Alert from "~/components/Alert";
+import BackButton from "~/components/BackButton";
 import CardContainer from "~/components/CardContainer";
 import { db } from "~/utils/db.server";
 import { requireUserId } from "~/utils/session.server";
@@ -27,12 +28,12 @@ export const action = async ({ params, request }: ActionArgs) => {
         where: { id: params.companyId },
     });
     if (!company) {
-        throw new Response("Company dont exists", {
+        throw new Response("Este recurso no existe", {
             status: 404,
         });
     }
     if (company.userId !== userId) {
-        throw new Response("User is not the owner", { status: 403 });
+        throw new Response("No puedes eliminar este recurso", { status: 403 });
     }
     await db.company.delete({ where: { id: params.companyId } });
     return redirect("/dashboard/companies");
@@ -43,12 +44,13 @@ export default function Company() {
 
     return (
         <>
+            <BackButton uri="/dashboard/companies" />
             <CardContainer>
                 <div className="card w-full card-compact bg-base-100 shadow-xl">
                     <div className="card-body">
                         <h2 className="card-title">{company.name}</h2>
                         <div className="card-actions justify-end">
-                            <button className="btn btn-primary">Editar</button>
+                            <Link to={`/dashboard/companies/edit/${company.id}`} className="btn btn-primary">Editar</Link>
                             <Form method="post">
                                 <button className="btn btn-secondary" name="intent" value="delete">Eliminar</button>
                             </Form>

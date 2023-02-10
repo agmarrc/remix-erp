@@ -11,7 +11,7 @@ export default function CompanyCard({company}: Props) {
             <div className="card-body">
                 <h2 className="card-title">{company.name}</h2>
                 <div className="card-actions justify-end">
-                    <Link to={`/dashboard/companies/${company.id}`} className="btn btn-primary">Ver</Link>
+                    <Link to={`/dashboard/companies/show/${company.id}`} className="btn btn-primary">Ver</Link>
                 </div>
             </div>
         </div>
