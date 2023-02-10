@@ -39,8 +39,8 @@ model Company {
 model Location {
   id      String   @id @default(uuid())
   name    String
-  latitude Decimal
-  longitude Decimal
+  latitude String
+  longitude String
   placeName String
   
   company Company @relation(fields: [companyId], references: [id], onDelete: Cascade)

@@ -5,7 +5,13 @@ import LocationCard from "~/components/LocationCard";
 import { db } from "~/utils/db.server";
 
 export const loader = async () => {
-    const locations = await db.location.findMany()
+    const locations = await db.location.findMany({
+        include: {
+            _count: {
+                select: { modules: true }
+            }
+        }
+    })
     return json({ locations });
 };
 

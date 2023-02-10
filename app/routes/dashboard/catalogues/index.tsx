@@ -5,7 +5,13 @@ import CatalogueCard from "~/components/CatalogueCard";
 import { db } from "~/utils/db.server";
 
 export const loader = async () => {
-    const catalogues = await db.catalogue.findMany()
+    const catalogues = await db.catalogue.findMany({
+        include: {
+            _count: {
+                select: { companies: true, locations: true, modules: true }
+            }
+        }
+    })
     return json({ catalogues });
 };
 

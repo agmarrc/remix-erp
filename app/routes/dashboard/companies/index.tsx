@@ -1,12 +1,17 @@
-import type { LoaderArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
 import { Link, Outlet, useLoaderData } from "@remix-run/react";
 import CardContainer from "~/components/CardContainer";
 import CompanyCard from "~/components/CompanyCard";
 import { db } from "~/utils/db.server";
 
-export const loader = async ({ request }: LoaderArgs) => {
-    const companies = await db.company.findMany()
+export const loader = async () => {
+    const companies = await db.company.findMany({
+        include: {
+            _count: {
+                select: { locations: true }
+            }
+        }
+    })
     return json({ companies });
 };
 
