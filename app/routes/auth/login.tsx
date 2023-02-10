@@ -1,10 +1,10 @@
-import { ActionArgs } from "@remix-run/node";
+import { ActionArgs, json, LoaderArgs, redirect } from "@remix-run/node";
 import { Form, Link, useActionData } from "@remix-run/react";
 import FormError from "~/components/FormError";
 
 import TextInput from "~/components/TextInput";
 import { badRequest } from "~/utils/request.server";
-import { createUserSession, login } from "~/utils/session.server";
+import { createUserSession, getUserId, login } from "~/utils/session.server";
 
 function validateEmail(email: unknown) {
     if (typeof email !== "string" || email.length < 3) {
@@ -17,6 +17,14 @@ function validatePassword(password: unknown) {
         return `Ingresa una contraseña`;
     }
 }
+
+export const loader = async ({ request }: LoaderArgs) => {
+    const userId = await getUserId(request);
+    if (userId) {
+        return redirect('/dashboard');
+    }
+    return json({});
+};
 
 export const action = async ({ request }: ActionArgs) => {
     const form = await request.formData();
@@ -55,8 +63,7 @@ export const action = async ({ request }: ActionArgs) => {
             formError: `Email o contraseña incorrecta`,
         });
     }
-    // if there is a user, create their session and redirect to /
-    return createUserSession(`${user.id}`, '/');
+    return createUserSession(`${user.id}`, '/dashboard');
 }
 
 export default function Login() {

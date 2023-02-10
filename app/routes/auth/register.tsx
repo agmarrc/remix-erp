@@ -1,11 +1,11 @@
-import { ActionArgs } from "@remix-run/node";
+import { ActionArgs, json, LoaderArgs, redirect } from "@remix-run/node";
 import { Form, Link, useActionData } from "@remix-run/react";
 import FormError from "~/components/FormError";
 
 import TextInput from "~/components/TextInput";
 import { db } from "~/utils/db.server";
 import { badRequest } from "~/utils/request.server";
-import { createUserSession, login, register } from "~/utils/session.server";
+import { createUserSession, getUserId, login, register } from "~/utils/session.server";
 
 function validateName(name: unknown) {
     if (typeof name !== "string" || name === "") {
@@ -24,6 +24,14 @@ function validatePassword(password: unknown) {
         return `La contraseña debe tener al menos 8 caracteres`;
     }
 }
+
+export const loader = async ({ request }: LoaderArgs) => {
+    const userId = await getUserId(request);
+    if (userId) {
+        return redirect('/dashboard');
+    }
+    return json({});
+};
 
 export const action = async ({ request }: ActionArgs) => {
     const form = await request.formData();
@@ -75,7 +83,7 @@ export const action = async ({ request }: ActionArgs) => {
             formError: `Something went wrong trying to create a new user.`,
         });
     }
-    return createUserSession(`${user.id}`, '/');
+    return createUserSession(`${user.id}`, '/dashboard');
 }
 
 export default function Login() {
