@@ -1,5 +1,6 @@
 import { json, LoaderArgs, redirect } from "@remix-run/node";
-import { Link, Outlet } from "@remix-run/react";
+import { Outlet } from "@remix-run/react";
+import BottomNav from "~/components/BottomNav";
 import Navbar from "~/components/Navbar";
 import { getUserId } from "~/utils/session.server";
 
@@ -16,13 +17,10 @@ export default function Dashboard() {
         <Navbar />
         <div className="container mx-auto">
             <h1 className="text-2xl">Dashboard</h1>
-            <div className="tabs mt-10">
-                <Link to="companies" className="tab tab-lifted">Empresas</Link>
-                <Link to="campus" className="tab tab-lifted">Sedes</Link>
-            </div>
             <div className="mx-2">
-            <Outlet />
+                <Outlet />
             </div>
+            <BottomNav />
         </div>
     </>
 }
