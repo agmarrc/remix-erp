@@ -41,7 +41,7 @@ model RoleList {
 model Company {
   id      String   @id @default(uuid())
   name    String
-  user    User @relation(fields: [userId], references: id)
+  user    User @relation(fields: [userId], references: id, onDelete: Cascade)
   userId  String
   campus Campus[]
   roleList RoleList[]
@@ -50,9 +50,9 @@ model Company {
 model Campus {
   id      String   @id @default(uuid())
   name    String
-  company Company @relation(fields: [companyId], references: [id])
+  company Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
   companyId String
-  user    User @relation(fields: [userId], references: id)
+  user    User @relation(fields: [userId], references: id, onDelete: Cascade)
   userId  String
   modules Module[]
 }
@@ -60,9 +60,9 @@ model Campus {
 model Module {
   id      String   @id @default(uuid())
   name    String
-  campus Campus @relation(fields: [campusId], references: [id])
+  campus Campus @relation(fields: [campusId], references: [id], onDelete: Cascade)
   campusId String
-  user    User @relation(fields: [userId], references: id)
+  user    User @relation(fields: [userId], references: id, onDelete: Cascade)
   userId  String
   catalogues Catalogue[]
 }
@@ -70,8 +70,8 @@ model Module {
 model Catalogue {
   id      String   @id @default(uuid())
   name    String
-  user    User @relation(fields: [userId], references: id)
+  user    User @relation(fields: [userId], references: id, onDelete: Cascade)
   userId  String
-  module Module @relation(fields: [moduleId], references: [id])
+  module Module @relation(fields: [moduleId], references: [id], onDelete: Cascade)
   moduleId String
 }
