@@ -32,7 +32,7 @@ model Company {
 
   locations Location[]
 
-  catalogue Catalogue @relation(fields: [catalogueId], references: [id])
+  catalogue Catalogue @relation(fields: [catalogueId], references: [id], onDelete: Cascade)
   catalogueId String
 }
 
@@ -48,7 +48,7 @@ model Location {
   
   modules Module[]
   
-  catalogue Catalogue @relation(fields: [catalogueId], references: [id])
+  catalogue Catalogue @relation(fields: [catalogueId], references: [id], onDelete: Cascade)
   catalogueId String
 }
 
@@ -60,7 +60,7 @@ model Module {
   location Location @relation(fields: [locationId], references: [id], onDelete: Cascade)
   locationId String
   
-  catalogue Catalogue @relation(fields: [catalogueId], references: [id])
+  catalogue Catalogue @relation(fields: [catalogueId], references: [id], onDelete: Cascade)
   catalogueId String
 }
 

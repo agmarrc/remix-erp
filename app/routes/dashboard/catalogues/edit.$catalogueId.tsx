@@ -15,16 +15,16 @@ function validateName(name: unknown) {
 }
 
 export const loader = async ({ params }: LoaderArgs) => {
-    const company = await db.company.findUnique({
-        where: { id: params.companyId }
+    const catalogue = await db.catalogue.findUnique({
+        where: { id: params.catalogueId }
     });
-    if (!company) {
+    if (!catalogue) {
         throw new Response("No se encontró el recurso", {
             status: 404
         });
     }
 
-    return json({ company });
+    return json({ catalogue });
 }
 
 export const action = async ({ params, request }: ActionArgs) => {
@@ -51,29 +51,29 @@ export const action = async ({ params, request }: ActionArgs) => {
         });
     }
 
-    await db.company.update({
+    await db.catalogue.update({
         where: {
-            id: params.companyId
+            id: params.catalogueId
         },
         data: {
             name: name
         }
     });
 
-    return redirect('/dashboard/companies');
+    return redirect('/dashboard/catalogues');
 }
 
-export default function EditCompany() {
-    const { company } = useLoaderData<typeof loader>();
+export default function EditCatalogue() {
+    const { catalogue } = useLoaderData<typeof loader>();
     const actionData = useActionData();
 
     return (
         <div className="mt-6">
-            <BackButton uri={`/dashboard/companies/show/${company.id}`} />
+            <BackButton uri={`/dashboard/catalogues/show/${catalogue.id}`} />
             <h3 className="text-xl">Editar</h3>
             <Form method="post">
                 <div className="my-6">
-                    <input type="text" name="name" defaultValue={company.name} placeholder="Nombre de la empresa" className="input input-bordered w-full max-w-xs" />
+                    <input type="text" name="name" defaultValue={catalogue.name} placeholder="Nombre del catálogo" className="input input-bordered w-full max-w-xs" />
                     <FormError error={actionData?.fieldErrors?.name} />
                 </div>
                 <div className="modal-action">
@@ -92,11 +92,11 @@ export function CatchBoundary() {
             return <Alert type="alert-error">Acción no permitida</Alert>
         }
         case 404: {
-            return <Alert type="alert-error">No se encontró la empresa con id {params.companyId}</Alert>
+            return <Alert type="alert-error">No se encontró el catálogo con id {params.catalogueId}</Alert>
 
         }
         case 403: {
-            return <Alert type="alert-error">No puedes editar la empresa con id {params.companyId} porque no tienes permisos suficientes</Alert>
+            return <Alert type="alert-error">No puedes editar el catálogo con id {params.catalogueId} porque no tienes permisos suficientes</Alert>
         }
         default: {
             throw new Error(`Unhandled error: ${caught.status}`);
@@ -105,8 +105,8 @@ export function CatchBoundary() {
 }
 
 export function ErrorBoundary() {
-    const { companyId } = useParams();
+    const { catalogueId } = useParams();
     return (
-        <div className="error-container">{`Ocurrió un error cargando la información de la empresa con id ${companyId}.`}</div>
+        <div className="error-container">{`Ocurrió un error cargando la información del catálogo con id ${catalogueId}.`}</div>
     );
 }
