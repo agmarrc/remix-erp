@@ -2,7 +2,6 @@ import { ActionArgs, json, LoaderArgs, redirect } from "@remix-run/node";
 import { Form, Link, useActionData } from "@remix-run/react";
 import FormError from "~/components/FormError";
 
-import TextInput from "~/components/TextInput";
 import { db } from "~/utils/db.server";
 import { badRequest } from "~/utils/request.server";
 import { createUserSession, getUserId, login, register } from "~/utils/session.server";

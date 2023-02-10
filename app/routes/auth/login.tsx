@@ -98,9 +98,6 @@ export default function Login() {
                             <div className="form-control mt-6">
                                 <button className="btn btn-primary">Iniciar sesión</button>
                             </div>
-                            <label className="label">
-                                <Link to="/auth/register" className="label-text-alt link link-hover">Registrarme</Link>
-                            </label>
                             <FormError error={actionData?.formError} />
                         </Form>
                     </div>
