@@ -1,6 +1,7 @@
 import { json } from "@remix-run/node";
 import { Link, Outlet, useLoaderData } from "@remix-run/react";
 import CardContainer from "~/components/CardContainer";
+import LocationCard from "~/components/LocationCard";
 import { db } from "~/utils/db.server";
 
 export const loader = async () => {
@@ -13,7 +14,7 @@ export default function Locations() {
 
     return <div className="mt-10">
         <div className="flex w-100 justify-between">
-            <h2 className="text-xl">Mis sedes</h2>
+            <h2 className="text-xl">Sedes</h2>
             <Link to="new" className="btn btn-primary">Nueva sede</Link>
         </div>
 
@@ -22,7 +23,7 @@ export default function Locations() {
         {locations.length === 0
             ? <h3>Aún no hay sedes.</h3>
             : <CardContainer>
-                {locations.map((location) => <h1 key={location.id}>{location.name}</h1>)}
+                {locations.map((location) => <LocationCard location={location} key={location.id} />)}
             </CardContainer>
         }
 

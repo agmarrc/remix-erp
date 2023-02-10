@@ -14,7 +14,7 @@ export default function Companies() {
 
     return <div className="mt-10">
         <div className="flex w-100 justify-between">
-            <h2 className="text-xl">Mis empresas</h2>
+            <h2 className="text-xl">Empresas</h2>
             <Link to="new" className="btn btn-primary">Nueva empresa</Link>
         </div>
 
