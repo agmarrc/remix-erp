@@ -59,6 +59,7 @@ export default function NewCompany() {
                 <div className="modal-action">
                     <button type="submit" className="btn btn-primary">Guardar</button>
                 </div>
+                <FormError error={actionData?.formError} />
             </Form>
         </div>
     );

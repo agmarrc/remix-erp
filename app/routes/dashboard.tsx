@@ -18,6 +18,7 @@ export default function Dashboard() {
             <h1 className="text-2xl">Dashboard</h1>
             <div className="tabs mt-10">
                 <Link to="companies" className="tab tab-lifted">Empresas</Link>
+                <Link to="campus" className="tab tab-lifted">Sedes</Link>
             </div>
             <div className="mx-2">
             <Outlet />
