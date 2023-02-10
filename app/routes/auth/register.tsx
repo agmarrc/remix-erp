@@ -90,38 +90,46 @@ export default function Login() {
     const actionData = useActionData<typeof action>();
 
     return (
-        <section className="bg-gray-50 dark:bg-gray-900">
-            <div className="flex flex-col items-center justify-center px-6 py-8 mx-auto md:h-screen lg:py-0">
-                <span className="flex items-center mb-6 text-2xl font-semibold text-gray-900 dark:text-white">
-                    Flowbite
-                </span>
-                <div className="w-full bg-white rounded-lg shadow dark:border md:mt-0 sm:max-w-md xl:p-0 dark:bg-gray-800 dark:border-gray-700">
-                    <div className="p-6 space-y-4 md:space-y-6 sm:p-8">
-                        <h1 className="text-xl font-bold leading-tight tracking-tight text-gray-900 md:text-2xl dark:text-white">
-                            Crea tu cuenta
-                        </h1>
-                        <Form className="space-y-4 md:space-y-6" method="post">
-                            <div>
-                                <TextInput id="name" labelText="Tu nombre" name="name" placeholder="Marco García" type="text" />
+        <div className="hero min-h-screen bg-base-200">
+            <div className="hero-content flex-col lg:flex-row-reverse">
+                <div className="text-center lg:text-left">
+                    <h1 className="text-5xl font-bold">Registrate</h1>
+                </div>
+                <div className="card flex-shrink-0 w-full max-w-sm shadow-2xl bg-base-100">
+                    <div className="card-body">
+                        <Form method="post">
+                            <div className="form-control">
+                                <label className="label">
+                                    <span className="label-text">Nombre</span>
+                                </label>
+                                <input type="text" placeholder="Marco García" name="name" className="input input-bordered" />
                                 <FormError error={actionData?.fieldErrors?.name} />
                             </div>
-                            <div>
-                                <TextInput id="email" labelText="Tu email" name="email" placeholder="correo@empresa.com" type="email" />
+                            <div className="form-control">
+                                <label className="label">
+                                    <span className="label-text">Email</span>
+                                </label>
+                                <input type="text" placeholder="my@email.com" name="email" className="input input-bordered" />
                                 <FormError error={actionData?.fieldErrors?.email} />
                             </div>
-                            <div>
-                                <TextInput id="password" labelText="Tu contraseña" name="password" placeholder="••••••••" type="password" />
+                            <div className="form-control">
+                                <label className="label">
+                                    <span className="label-text">Contraseña</span>
+                                </label>
+                                <input type="password" placeholder="********" name="password" className="input input-bordered" />
                                 <FormError error={actionData?.fieldErrors?.password} />
                             </div>
-                            <button type="submit" className="w-full text-white bg-primary-600 hover:bg-primary-700 focus:ring-4 focus:outline-none focus:ring-primary-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800">Ingresar</button>
-                            <p className="text-sm font-light text-gray-500 dark:text-gray-400">
-                                ¿Ya tienes cuenta? <Link to="/auth/login" className="font-medium text-primary-600 hover:underline dark:text-primary-500">Inicia sesión</Link>
-                            </p>
+                            <div className="form-control mt-6">
+                                <button className="btn btn-primary">Crear cuenta</button>
+                            </div>
+                            <label className="label">
+                                <Link to="/auth/login" className="label-text-alt link link-hover">Ya tengo una cuenta</Link>
+                            </label>
                             <FormError error={actionData?.formError} />
                         </Form>
                     </div>
                 </div>
             </div>
-        </section>
+        </div>
     );
 }
