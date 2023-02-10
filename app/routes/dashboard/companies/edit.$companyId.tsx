@@ -1,12 +1,12 @@
-import { ActionArgs, json, LoaderArgs } from "@remix-run/node";
-import { Form, Link, useActionData, useCatch, useLoaderData } from "@remix-run/react";
+import type { ActionArgs, LoaderArgs } from "@remix-run/node";
+import { json } from "@remix-run/node";
+import { Form, useActionData, useCatch, useLoaderData } from "@remix-run/react";
 import { redirect, useParams } from "react-router";
 import Alert from "~/components/Alert";
 import BackButton from "~/components/BackButton";
 import FormError from "~/components/FormError";
 import { db } from "~/utils/db.server";
 import { badRequest } from "~/utils/request.server";
-import { requireUserId } from "~/utils/session.server";
 
 function validateName(name: unknown) {
     if (name === "") {
@@ -15,7 +15,6 @@ function validateName(name: unknown) {
 }
 
 export const loader = async ({ params, request }: LoaderArgs) => {
-    const userId = await requireUserId(request);
     const company = await db.company.findUnique({
         where: { id: params.companyId }
     });

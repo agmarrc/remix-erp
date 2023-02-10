@@ -3,7 +3,7 @@ import { OSM } from 'ol/source';
 import TileLayer from "ol/layer/Tile";
 import { useGeographic } from "ol/proj";
 import { useEffect, useRef, useState } from "react";
-import { Coordinate } from "ol/coordinate";
+import type { Coordinate } from "ol/coordinate";
 
 interface Props {
     onPickLocation: (coordinate: Coordinate) => void;
@@ -14,11 +14,12 @@ export default function PickerMap({onPickLocation}: Props) {
     const [position, setPosition] = useState<GeolocationPosition | null>(null);
 
     const zoom = 13;
+    
+    useGeographic();
 
     useEffect(() => {
         if (!position || !mapRef.current) return;
 
-        useGeographic();
         const { latitude, longitude } = position.coords;
         const center = [longitude, latitude];
 

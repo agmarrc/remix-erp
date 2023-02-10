@@ -1,6 +1,7 @@
-import { ActionArgs, json, LoaderArgs, redirect } from "@remix-run/node";
+import type { ActionArgs} from "@remix-run/node";
+import { json, redirect } from "@remix-run/node";
 import { Form, Link, useActionData, useLoaderData, useSubmit } from "@remix-run/react";
-import { Coordinate } from "ol/coordinate";
+import type { Coordinate } from "ol/coordinate";
 import React, { useState } from "react";
 import Alert from "~/components/Alert";
 import BackButton from "~/components/BackButton";
@@ -8,7 +9,6 @@ import FormError from "~/components/FormError";
 import PickerMap from "~/components/PickerMap";
 import { db } from "~/utils/db.server";
 import { badRequest } from "~/utils/request.server";
-import { requireUserId } from "~/utils/session.server";
 
 function validateName(name: unknown) {
     if (name === "") {
@@ -34,7 +34,6 @@ export const loader = async () => {
 }
 
 export const action = async ({ request }: ActionArgs) => {
-    const userId = await requireUserId(request);
     const form = await request.formData();
     const name = form.get("name");
     const companyId = form.get("companyId");

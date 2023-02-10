@@ -1,10 +1,10 @@
-import { ActionArgs, json, redirect } from "@remix-run/node";
+import type { ActionArgs} from "@remix-run/node";
+import { json, redirect } from "@remix-run/node";
 import { Form, useActionData, useLoaderData } from "@remix-run/react";
 import BackButton from "~/components/BackButton";
 import FormError from "~/components/FormError";
 import { db } from "~/utils/db.server";
 import { badRequest } from "~/utils/request.server";
-import { requireUserId } from "~/utils/session.server";
 
 function validateName(name: unknown) {
     if (name === "") {

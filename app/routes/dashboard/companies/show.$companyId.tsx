@@ -1,10 +1,10 @@
-import { ActionArgs, json, LoaderArgs, redirect } from "@remix-run/node";
+import type { ActionArgs, LoaderArgs} from "@remix-run/node";
+import { json, redirect } from "@remix-run/node";
 import { Form, Link, useCatch, useLoaderData, useParams } from "@remix-run/react";
 import Alert from "~/components/Alert";
 import BackButton from "~/components/BackButton";
 import CardContainer from "~/components/CardContainer";
 import { db } from "~/utils/db.server";
-import { requireUserId } from "~/utils/session.server";
 
 export const loader = async ({ params, request }: LoaderArgs) => {
     const company = await db.company.findUnique({
@@ -22,7 +22,6 @@ export const action = async ({ params, request }: ActionArgs) => {
     const form = await request.formData();
     if (form.get('intent') !== 'delete') return null;
 
-    const userId = await requireUserId(request);
     const company = await db.company.findUnique({
         where: { id: params.companyId },
     });

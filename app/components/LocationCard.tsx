@@ -1,4 +1,4 @@
-import { Location } from "@prisma/client";
+import type { Location } from "@prisma/client";
 import { Link } from "@remix-run/react";
 
 interface Props {

@@ -1,4 +1,5 @@
-import { json, LoaderArgs, redirect } from "@remix-run/node";
+import type { LoaderArgs} from "@remix-run/node";
+import { json, redirect } from "@remix-run/node";
 import { Outlet } from "@remix-run/react";
 import BottomNav from "~/components/BottomNav";
 import Navbar from "~/components/Navbar";

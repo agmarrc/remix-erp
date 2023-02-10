@@ -1,4 +1,4 @@
-import { Catalogue } from "@prisma/client";
+import type { Catalogue } from "@prisma/client";
 import { Link } from "@remix-run/react";
 
 interface Props {
