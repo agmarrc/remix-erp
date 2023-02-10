@@ -3,13 +3,9 @@ import { Link, Outlet, useLoaderData } from "@remix-run/react";
 import CardContainer from "~/components/CardContainer";
 import CompanyCard from "~/components/CompanyCard";
 import { db } from "~/utils/db.server";
-import { requireUserId } from "~/utils/session.server";
 
 export const loader = async ({ request }: LoaderArgs) => {
-    const userId = await requireUserId(request);
-    const companies = await db.company.findMany({
-        where: { userId: userId }
-    })
+    const companies = await db.company.findMany()
     return json({ companies });
 };
 

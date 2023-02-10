@@ -15,60 +15,58 @@ model User {
   email   String   @unique
   name    String
   passwordHash String
-  companies Company[]
-  campus Campus[]
-  modules Module[]
-  catalogues Catalogue[]
-  owner Role[] @relation(name: "owner")
-  guest Role[] @relation(name: "guest")
+  role Role @relation(fields: [roleId], references: [id])
+  roleId String
 }
 
 model Role {
   id    String   @id @default(uuid())
   privileges Int
-  owner User @relation(fields: [ownerId], references: [id], name: "owner")
-  ownerId String
-  guest User @relation(fields: [guestId], references: [id], name: "guest")
-  guestId String
+  users User[]
 }
 
 model Company {
   id      String   @id @default(uuid())
   name    String
-  user    User @relation(fields: [userId], references: id, onDelete: Cascade)
-  userId  String
-  campus Campus[]
+
+  locations Location[]
+
+  catalogue Catalogue @relation(fields: [catalogueId], references: [id])
+  catalogueId String
 }
 
-model Campus {
+model Location {
   id      String   @id @default(uuid())
   name    String
   latitude Decimal
   longitude Decimal
   placeName String
+  
   company Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
   companyId String
-  user    User @relation(fields: [userId], references: id, onDelete: Cascade)
-  userId  String
+  
   modules Module[]
+  
+  catalogue Catalogue @relation(fields: [catalogueId], references: [id])
+  catalogueId String
 }
 
 model Module {
   id      String   @id @default(uuid())
   name    String
   workers Int
-  campus Campus @relation(fields: [campusId], references: [id], onDelete: Cascade)
-  campusId String
-  user    User @relation(fields: [userId], references: id, onDelete: Cascade)
-  userId  String
-  catalogues Catalogue[]
+  
+  location Location @relation(fields: [locationId], references: [id], onDelete: Cascade)
+  locationId String
+  
+  catalogue Catalogue @relation(fields: [catalogueId], references: [id])
+  catalogueId String
 }
 
 model Catalogue {
   id      String   @id @default(uuid())
   name    String
-  user    User @relation(fields: [userId], references: id, onDelete: Cascade)
-  userId  String
-  module Module @relation(fields: [moduleId], references: [id], onDelete: Cascade)
-  moduleId String
+  companies Company[]
+  locations Location[]
+  modules Module[]
 }

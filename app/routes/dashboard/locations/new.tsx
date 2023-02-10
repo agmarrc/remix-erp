@@ -28,11 +28,8 @@ function validatePlaceName(placeName: unknown) {
     }
 }
 
-export const loader = async ({ request }: LoaderArgs) => {
-    const userId = await requireUserId(request);
-    const companies = await db.company.findMany({
-        where: { userId: userId }
-    });
+export const loader = async () => {
+    const companies = await db.company.findMany();
     return json({ companies });
 }
 
@@ -58,7 +55,19 @@ export const action = async ({ request }: ActionArgs) => {
             formError: `El formulario no se envió correctamente.`,
         });
     }
-    const fields = { name, companyId, placeName, latitude, longitude };
+
+    const company = await db.company.findUnique({
+        where: { id: companyId }
+    });
+
+    if (!company) {
+        throw new Response('No se encontró la empresa', {
+            status: 404
+        })
+    }
+
+    const catalogueId = company.catalogueId;
+    const fields = { name, companyId, catalogueId, placeName, latitude, longitude };
     const fieldErrors = {
         name: validateName(name),
         companyId: validateCompanyId(companyId),
@@ -72,11 +81,11 @@ export const action = async ({ request }: ActionArgs) => {
         });
     }
 
-    await db.campus.create({
-        data: { ...fields, userId: userId }
+    await db.location.create({
+        data: { ...fields }
     })
 
-    return redirect('/dashboard/campus');
+    return redirect('/dashboard/locations');
 }
 
 export default function NewCompany() {
@@ -121,7 +130,7 @@ export default function NewCompany() {
 
     return (
         <div>
-            <BackButton uri="/dashboard/campus" />
+            <BackButton uri="/dashboard/locations" />
             <Form onSubmit={onSubmit} method="post">
                 <div className="my-6">
                     <select className="select w-full max-w-xs" name="companyId">

@@ -7,7 +7,6 @@ import { db } from "~/utils/db.server";
 import { requireUserId } from "~/utils/session.server";
 
 export const loader = async ({ params, request }: LoaderArgs) => {
-    const userId = await requireUserId(request);
     const company = await db.company.findUnique({
         where: { id: params.companyId }
     });
@@ -16,7 +15,7 @@ export const loader = async ({ params, request }: LoaderArgs) => {
             status: 404
         });
     }
-    return json({ company, isOwner: userId === company.userId });
+    return json({ company });
 }
 
 export const action = async ({ params, request }: ActionArgs) => {
@@ -32,15 +31,12 @@ export const action = async ({ params, request }: ActionArgs) => {
             status: 404,
         });
     }
-    if (company.userId !== userId) {
-        throw new Response("No puedes eliminar este recurso", { status: 403 });
-    }
     await db.company.delete({ where: { id: params.companyId } });
     return redirect("/dashboard/companies");
 }
 
 export default function Company() {
-    const { company, isOwner } = useLoaderData<typeof loader>();
+    const { company } = useLoaderData<typeof loader>();
 
     return (
         <>

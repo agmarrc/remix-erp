@@ -1,5 +1,5 @@
-import { ActionArgs, redirect } from "@remix-run/node";
-import { Form, useActionData } from "@remix-run/react";
+import { ActionArgs, json, redirect } from "@remix-run/node";
+import { Form, useActionData, useLoaderData } from "@remix-run/react";
 import BackButton from "~/components/BackButton";
 import FormError from "~/components/FormError";
 import { db } from "~/utils/db.server";
@@ -12,13 +12,25 @@ function validateName(name: unknown) {
     }
 }
 
+function validateCatalogueId(catalogueId: unknown) {
+    if (catalogueId === "") {
+        return `Selecciona un catálogo`;
+    }
+}
+
+export const loader = async () => {
+    const catalogues = await db.catalogue.findMany();
+    return json({ catalogues });
+}
+
 export const action = async ({ request }: ActionArgs) => {
-    const userId = await requireUserId(request);
     const form = await request.formData();
     const name = form.get("name");
+    const catalogueId = form.get("catalogueId");
 
     if (
-        typeof name !== "string"
+        typeof name !== "string" ||
+        typeof catalogueId !== "string"
     ) {
         return badRequest({
             fieldErrors: null,
@@ -26,9 +38,10 @@ export const action = async ({ request }: ActionArgs) => {
             formError: `El formulario no se envió correctamente.`,
         });
     }
-    const fields = { name };
+    const fields = { name, catalogueId };
     const fieldErrors = {
         name: validateName(name),
+        catalogueId: validateCatalogueId(catalogueId),
     };
     if (Object.values(fieldErrors).some(Boolean)) {
         return badRequest({
@@ -39,19 +52,26 @@ export const action = async ({ request }: ActionArgs) => {
     }
 
     await db.company.create({
-        data: { ...fields, userId: userId }
+        data: { ...fields }
     });
 
     return redirect('/dashboard/companies');
 }
 
 export default function NewCompany() {
+    const { catalogues } = useLoaderData<typeof loader>();
     const actionData = useActionData<typeof action>();
 
     return (
         <div>
             <BackButton uri="/dashboard/companies" />
             <Form method="post">
+                <div className="my-6">
+                    <select className="select w-full max-w-xs" name="catalogueId">
+                        {catalogues.map((catalogue) => <option key={catalogue.id} value={catalogue.id}>{catalogue.name}</option>)}
+                    </select>
+                    <FormError error={actionData?.fieldErrors?.catalogueId} />
+                </div>
                 <div className="my-6">
                     <input type="text" name="name" placeholder="Nombre de la empresa" className="input input-bordered w-full max-w-xs" />
                     <FormError error={actionData?.fieldErrors?.name} />

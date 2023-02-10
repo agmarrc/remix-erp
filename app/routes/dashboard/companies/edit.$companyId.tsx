@@ -25,13 +25,7 @@ export const loader = async ({ params, request }: LoaderArgs) => {
         });
     }
 
-    if (company.userId !== userId) {
-        throw new Response("No tienes permisos para editar este recurso", {
-            status: 403
-        });
-    }
-
-    return json({ company, isOwner: userId === company.userId });
+    return json({ company });
 }
 
 export const action = async ({ params, request }: ActionArgs) => {
