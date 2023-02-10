@@ -19,23 +19,17 @@ model User {
   campus Campus[]
   modules Module[]
   catalogues Catalogue[]
-  owner RoleList[] @relation(name: "owner")
-  guest RoleList[] @relation(name: "guest")
+  owner Role[] @relation(name: "owner")
+  guest Role[] @relation(name: "guest")
 }
 
 model Role {
-  id      String   @id @default(uuid())
-  description    String
-}
-
-model RoleList {
   id    String   @id @default(uuid())
+  privileges Int
   owner User @relation(fields: [ownerId], references: [id], name: "owner")
   ownerId String
   guest User @relation(fields: [guestId], references: [id], name: "guest")
   guestId String
-  company Company @relation(fields: [companyId], references: [id])
-  companyId String 
 }
 
 model Company {
@@ -44,12 +38,14 @@ model Company {
   user    User @relation(fields: [userId], references: id, onDelete: Cascade)
   userId  String
   campus Campus[]
-  roleList RoleList[]
 }
 
 model Campus {
   id      String   @id @default(uuid())
   name    String
+  latitude Decimal
+  longitude Decimal
+  placeName String
   company Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
   companyId String
   user    User @relation(fields: [userId], references: id, onDelete: Cascade)
@@ -60,6 +56,7 @@ model Campus {
 model Module {
   id      String   @id @default(uuid())
   name    String
+  workers Int
   campus Campus @relation(fields: [campusId], references: [id], onDelete: Cascade)
   campusId String
   user    User @relation(fields: [userId], references: id, onDelete: Cascade)
