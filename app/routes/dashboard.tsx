@@ -16,12 +16,12 @@ export const loader = async ({ request }: LoaderArgs) => {
 export default function Dashboard() {
     return <>
         <Navbar />
-        <div className="container mx-auto">
+        <div className="container mx-auto mb-36">
             <h1 className="text-2xl">Dashboard</h1>
             <div className="mx-2">
                 <Outlet />
             </div>
-            <BottomNav />
         </div>
+            <BottomNav />
     </>
 }
