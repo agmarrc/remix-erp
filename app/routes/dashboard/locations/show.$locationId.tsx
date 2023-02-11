@@ -1,4 +1,5 @@
-import { ActionArgs, LoaderArgs, redirect } from "@remix-run/node";
+import type { ActionArgs, LoaderArgs} from "@remix-run/node";
+import { redirect } from "@remix-run/node";
 import { json } from "@remix-run/node";
 import { Form, Link, useCatch, useLoaderData, useParams } from "@remix-run/react";
 import Alert from "~/components/Alert";
@@ -62,7 +63,6 @@ export default function ShowLocation() {
 
 export function CatchBoundary() {
     const caught = useCatch();
-    const params = useParams();
 
     switch (caught.status) {
         case 404: {

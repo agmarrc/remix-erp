@@ -62,7 +62,6 @@ export default function ShowModule() {
 
 export function CatchBoundary() {
     const caught = useCatch();
-    const params = useParams();
 
     switch (caught.status) {
         case 404: {

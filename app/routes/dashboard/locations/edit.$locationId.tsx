@@ -1,7 +1,7 @@
 import type { ActionArgs, LoaderArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
 import { Form, Link, useActionData, useCatch, useLoaderData, useSubmit } from "@remix-run/react";
-import { Coordinate } from "ol/coordinate";
+import type { Coordinate } from "ol/coordinate";
 import { useState } from "react";
 import { redirect, useParams } from "react-router";
 import Alert from "~/components/Alert";
