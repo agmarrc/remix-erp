@@ -60,7 +60,7 @@ export const action = async ({ params, request }: ActionArgs) => {
         }
     });
 
-    return redirect('/dashboard/catalogues');
+    return redirect(`/dashboard/catalogues/show/${params.catalogueId}`);
 }
 
 export default function EditCatalogue() {
@@ -107,6 +107,6 @@ export function CatchBoundary() {
 export function ErrorBoundary() {
     const { catalogueId } = useParams();
     return (
-        <div className="error-container">{`Ocurrió un error cargando la información del catálogo con id ${catalogueId}.`}</div>
+        <Alert type="alert-error">Ocurrió un error cargando la información del catálogo con id {catalogueId}</Alert>
     );
 }

@@ -1,4 +1,4 @@
-import type { ActionArgs, LoaderArgs} from "@remix-run/node";
+import type { ActionArgs, LoaderArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
 import { Form, Link, useCatch, useLoaderData, useParams } from "@remix-run/react";
 import Alert from "~/components/Alert";
@@ -80,6 +80,6 @@ export function CatchBoundary() {
 export function ErrorBoundary() {
     const { companyId } = useParams();
     return (
-        <div className="error-container">{`Ocurrió un error cargando la información de la empresa con id ${companyId}.`}</div>
+        <Alert type="alert-error">Occurió un error procesando la empresa con id {companyId}</Alert>
     );
 }

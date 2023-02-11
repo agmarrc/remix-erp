@@ -60,7 +60,7 @@ export const action = async ({ params, request }: ActionArgs) => {
         }
     });
 
-    return redirect('/dashboard/companies');
+    return redirect(`/dashboard/companies/show/${params.companyId}`);
 }
 
 export default function EditCompany() {
@@ -107,6 +107,6 @@ export function CatchBoundary() {
 export function ErrorBoundary() {
     const { companyId } = useParams();
     return (
-        <div className="error-container">{`Ocurrió un error cargando la información de la empresa con id ${companyId}.`}</div>
+        <Alert type="alert-error">Ocurrió un error cargando la información de la empresa con id {companyId}</Alert>
     );
 }
