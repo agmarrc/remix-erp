@@ -6,6 +6,7 @@ interface RegisterForm {
   name: string;
   email: string;
   password: string;
+  isAdmin: boolean;
 }
 
 interface LoginForm {
@@ -13,11 +14,13 @@ interface LoginForm {
   password: string;
 };
 
-export async function register({ name, email, password }: RegisterForm) {
+export async function register({ name, email, password, isAdmin }: RegisterForm) {
   const passwordHash = await bcrypt.hash(password, 10);
 
+  const privileges = isAdmin ? 1 : 2;
+
   const userRole = await db.role.findUnique({
-    where: { privileges: 2 }
+    where: { privileges: privileges }
   });
 
   if (!userRole) throw new Error('Los roles aún no han sido creados');

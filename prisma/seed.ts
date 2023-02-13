@@ -5,14 +5,14 @@ async function main() {
     const admin = await prisma.role.create({
         data: {
             privileges: 1,
-            description: 'Rol de administrador'
+            description: 'Administrador'
         }
     });
 
     await prisma.role.create({
         data: {
             privileges: 2,
-            description: 'Rol de usuario'
+            description: 'Usuario'
         }
     });
 

@@ -24,8 +24,6 @@ export default function DashboardIndex() {
             <Link to="/dashboard/catalogues/new" className="btn btn-primary">Nuevo catálogo</Link>
         </div>
 
-        <Outlet />
-
         {catalogues.length === 0
             ? <h3>Aún no hay catálogos.</h3>
             : <CardContainer>

@@ -11,6 +11,12 @@ export default function Navbar() {
                     </label>
                     <ul tabIndex={0} className="menu menu-compact dropdown-content mt-3 p-2 shadow bg-base-100 rounded-box w-52">
                         <li>
+                            <Link to="/dashboard">Inicio</Link>
+                        </li>
+                        <li>
+                            <Link to="/dashboard/users">Usuarios</Link>
+                        </li>
+                        <li>
                             <Form action="/auth/logout" method="post">
                                 <button type="submit">
                                     Cerrar sesión
