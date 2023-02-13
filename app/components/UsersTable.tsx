@@ -1,4 +1,5 @@
 import type { Role } from "@prisma/client";
+import { Link } from "@remix-run/react";
 
 interface Props {
     users: {
@@ -55,7 +56,9 @@ function TableRow({ user }: RowProps) {
                 <span className="badge badge-ghost badge-sm">{user.role.description}</span>
             </td>
             <th>
-                <button className="btn btn-ghost btn-xs">Ver más</button>
+                <Link to={`/dashboard/users/show/${user.id}`} className="btn btn-ghost btn-xs">
+                    Ver más
+                </Link>
             </th>
         </tr>
     );

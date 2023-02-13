@@ -1,11 +1,11 @@
-import type { LoaderArgs} from "@remix-run/node";
+import type { LoaderArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
 import { Link, useLoaderData } from "@remix-run/react";
 import UsersTable from "~/components/UsersTable";
 import { db } from "~/utils/db.server";
 import { getUser } from "~/utils/session.server";
 
-export const loader = async ({request}: LoaderArgs) => {
+export const loader = async ({ request }: LoaderArgs) => {
     const user = await getUser(request);
 
     if (user?.role.privileges !== 1) return redirect('/dashboard');
@@ -27,7 +27,7 @@ export default function UsersIndex() {
         </div>
 
         <div className="mt-10">
-        <UsersTable users={users} />
+            <UsersTable users={users} />
         </div>
     </div>
 }
