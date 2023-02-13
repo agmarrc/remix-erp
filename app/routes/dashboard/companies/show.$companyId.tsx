@@ -4,11 +4,23 @@ import { Form, Link, useCatch, useLoaderData, useParams } from "@remix-run/react
 import Alert from "~/components/Alert";
 import BackButton from "~/components/BackButton";
 import CardContainer from "~/components/CardContainer";
+import LocationCard from "~/components/LocationCard";
 import { db } from "~/utils/db.server";
 
 export const loader = async ({ params }: LoaderArgs) => {
     const company = await db.company.findUnique({
-        where: { id: params.companyId }
+        where: { id: params.companyId },
+        include: {
+            locations: {
+                include: {
+                    _count: {
+                        select: {
+                            modules: true
+                        }
+                    }
+                }
+            }
+        }
     });
     if (!company) {
         throw new Response("Company not found", {
@@ -36,6 +48,7 @@ export const action = async ({ params, request }: ActionArgs) => {
 
 export default function Company() {
     const { company } = useLoaderData<typeof loader>();
+    const locations = company.locations;
 
     return (
         <>
@@ -52,6 +65,15 @@ export default function Company() {
                         </div>
                     </div>
                 </div>
+            </CardContainer>
+            <h3 className="text-xl">Sedes en esta empresa</h3>
+            <CardContainer>
+                {locations.length === 0
+                    ? <h3>Aún no hay sedes.</h3>
+                    : <CardContainer>
+                        {locations.map((location) => <LocationCard location={location} key={location.id} />)}
+                    </CardContainer>
+                }
             </CardContainer>
         </>
     );

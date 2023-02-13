@@ -5,12 +5,15 @@ import { Form, Link, useCatch, useLoaderData, useParams } from "@remix-run/react
 import Alert from "~/components/Alert";
 import BackButton from "~/components/BackButton";
 import CardContainer from "~/components/CardContainer";
+import ModuleCard from "~/components/ModuleCard";
 import { db } from "~/utils/db.server";
 
 export const loader = async ({ params }: LoaderArgs) => {
     const location = await db.location.findUnique({
         where: { id: params.locationId },
-        include: { modules: true }
+        include: { 
+            modules: true
+        }
     });
 
     if (!location) {
@@ -40,6 +43,7 @@ export const action = async ({ params, request }: ActionArgs) => {
 
 export default function ShowLocation() {
     const { location } = useLoaderData<typeof loader>();
+    const modules = location.modules;
 
     return (
         <>
@@ -56,6 +60,15 @@ export default function ShowLocation() {
                         </div>
                     </div>
                 </div>
+            </CardContainer>
+            <h3 className="text-xl">Módulos en esta sede</h3>
+            <CardContainer>
+                {modules.length === 0
+                    ? <h3>Aún no hay módulos.</h3>
+                    : <CardContainer>
+                        {modules.map((module) => <ModuleCard module={module} key={module.id} />)}
+                    </CardContainer>
+                }
             </CardContainer>
         </>
     )

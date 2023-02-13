@@ -1,16 +1,23 @@
-import type { ActionArgs, LoaderArgs} from "@remix-run/node";
+import type { ActionArgs, LoaderArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
 import { Form, Link, useCatch, useLoaderData, useParams } from "@remix-run/react";
 import Alert from "~/components/Alert";
 import BackButton from "~/components/BackButton";
 import CardContainer from "~/components/CardContainer";
+import CompanyCard from "~/components/CompanyCard";
 import { db } from "~/utils/db.server";
 
 export const loader = async ({ params }: LoaderArgs) => {
     const catalogue = await db.catalogue.findUnique({
         where: { id: params.catalogueId },
         include: {
-            companies: true, locations: true, modules: true
+            companies: {
+                include: {
+                    _count: {
+                        select: { locations: true }
+                    }
+                }
+            }, locations: true, modules: true
         }
     });
     if (!catalogue) {
@@ -39,6 +46,7 @@ export const action = async ({ params, request }: ActionArgs) => {
 
 export default function Catalogue() {
     const { catalogue } = useLoaderData<typeof loader>();
+    const companies = catalogue.companies;
 
     return (
         <>
@@ -55,6 +63,15 @@ export default function Catalogue() {
                         </div>
                     </div>
                 </div>
+            </CardContainer>
+            <h3 className="text-xl">Empresas en este catálogo</h3>
+            <CardContainer>
+                {companies.length === 0
+                    ? <h3>Aún no hay empresas.</h3>
+                    : <CardContainer>
+                        {companies.map((company) => <CompanyCard company={company} key={company.id} />)}
+                    </CardContainer>
+                }
             </CardContainer>
         </>
     );

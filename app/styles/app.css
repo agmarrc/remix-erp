@@ -3624,6 +3624,12 @@ html {
   }
 }
 
+@media not all and (min-width: 1280px) {
+  .max-xl\:grid-cols-3 {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
 @media (min-width: 640px) {
   .sm\:text-sm {
     font-size: 0.875rem;
