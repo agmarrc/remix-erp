@@ -105,8 +105,8 @@ export default function EditLocation() {
         const $form = e.currentTarget;
 
         const formData = new FormData($form);
-        formData.set('latitude', String(locationMap[0]));
-        formData.set('longitude', String(locationMap[1]));
+        formData.set('longitude', String(locationMap[0]));
+        formData.set('latitude', String(locationMap[1]));
 
         submit(formData, {
             method: "post",
@@ -128,7 +128,7 @@ export default function EditLocation() {
                 </div>
                 <div className="h-80 my-6">
                     <h4 className="text-xl mb-2">Selecciona la ubicación</h4>
-                    <PickerMap onPickLocation={onPickLocation} />
+                    <PickerMap hasMarker={true} latitude={parseFloat(location.latitude)} longitude={parseFloat(location.longitude)} onPickLocation={onPickLocation} />
                     <FormError error={locationError} />
                 </div>
                 <div className="modal-action mt-20">

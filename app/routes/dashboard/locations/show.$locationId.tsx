@@ -5,6 +5,7 @@ import { Form, Link, useCatch, useLoaderData, useParams } from "@remix-run/react
 import Alert from "~/components/Alert";
 import BackButton from "~/components/BackButton";
 import CardContainer from "~/components/CardContainer";
+import LocationMap from "~/components/LocationMap";
 import ModuleCard from "~/components/ModuleCard";
 import { db } from "~/utils/db.server";
 
@@ -67,6 +68,13 @@ export default function ShowLocation() {
                     </div>
                 </div>
             </CardContainer>
+
+            <div className="my-10">
+                <h3 className="text-xl">Ubicación</h3>
+                <div className="h-80">
+                    <LocationMap longitude={parseFloat(location.longitude)} latitude={parseFloat(location.latitude)} />
+                </div>
+            </div>
 
             <div className="flex gap-5 justify-between">
                 <h3 className="text-xl">Módulos en esta sede</h3>

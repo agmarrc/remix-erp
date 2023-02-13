@@ -1,5 +1,6 @@
 import type { Location } from "@prisma/client";
 import { Link } from "@remix-run/react";
+import LocationMap from "./LocationMap";
 
 interface Props {
     location: Location & {
@@ -22,6 +23,9 @@ export default function LocationCard({ location }: Props) {
                 </h2>
                 <p><strong>{location.placeName}</strong></p>
                 <p><strong>Módulos:</strong> {location._count.modules}</p>
+                <div className="h-80">
+                    <LocationMap latitude={parseFloat(location.latitude)} longitude={parseFloat(location.longitude)} />
+                </div>
                 <div className="card-actions justify-end">
                     <Link to={`/dashboard/locations/show/${location.id}`} className="btn btn-primary">Ver</Link>
                 </div>

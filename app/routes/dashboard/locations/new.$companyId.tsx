@@ -111,8 +111,8 @@ export default function NewCompany() {
         const $form = e.currentTarget;
 
         const formData = new FormData($form);
-        formData.set('latitude', String(location[0]));
-        formData.set('longitude', String(location[1]));
+        formData.set('longitude', String(location[0]));
+        formData.set('latitude', String(location[1]));
 
         submit(formData, {
             method: "post",

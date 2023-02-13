@@ -11,13 +11,16 @@ import { generateMarker } from "~/utils/map.client";
 
 interface Props {
     onPickLocation: (coordinate: Coordinate) => void;
+    hasMarker?: boolean;
+    longitude?: number;
+    latitude?: number;
 }
 
 let marker: VectorLayer<VectorSource<Point>> | null = null;;
 
-export default function PickerMap({ onPickLocation }: Props) {
+export default function PickerMap({ onPickLocation, hasMarker, longitude, latitude }: Props) {
     const mapRef = useRef(null);
-    const [position, setPosition] = useState<GeolocationPosition | null>(null);
+    const [position, setPosition] = useState<Array<number> | null>(null);
 
     const zoom = 13;
 
@@ -26,7 +29,7 @@ export default function PickerMap({ onPickLocation }: Props) {
     useEffect(() => {
         if (!position || !mapRef.current) return;
 
-        const { latitude, longitude } = position.coords;
+        const [ longitude, latitude ] = position;
         const center = [longitude, latitude];
 
         let options = {
@@ -42,18 +45,26 @@ export default function PickerMap({ onPickLocation }: Props) {
 
         let mapObject = new Map(options);
         mapObject.setTarget(mapRef.current);
+
+        if (hasMarker) {
+            const vectorLayer = generateMarker(longitude, latitude);
+            marker = vectorLayer;
+
+            mapObject.addLayer(vectorLayer);
+        }
+
         mapObject.on('click', (e) => {
             const { coordinate } = e;
 
-            const x = coordinate[0];
-            const y = coordinate[1];
+            const lon = coordinate[0];
+            const lat = coordinate[1];
 
             if (marker) {
                 mapObject.removeLayer(marker);
                 marker = null;
             }
 
-            const vectorLayer = generateMarker(x, y);
+            const vectorLayer = generateMarker(lon, lat);
             marker = vectorLayer;
 
             mapObject.addLayer(vectorLayer);
@@ -64,7 +75,14 @@ export default function PickerMap({ onPickLocation }: Props) {
     }, [position, mapRef]);
 
     useEffect(() => {
-        navigator.geolocation.getCurrentPosition(setPosition, null);
+        if (latitude && longitude) {
+            setPosition([longitude, latitude]);
+        } else {
+            navigator.geolocation.getCurrentPosition((position) => {
+                const {latitude, longitude} = position.coords;
+                setPosition([longitude, latitude]);
+            }, null);
+        }
     }, [])
 
     return (
