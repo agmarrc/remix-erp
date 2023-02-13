@@ -126,6 +126,25 @@ export default function ShowUser() {
 
     const { cataloguePermissions, companyPermissions, locationPermissions, modulePermissions } = user;
 
+    if (user.role.privileges == 1) {
+        return (
+            <>
+                <BackButton uri={`/dashboard/users`} />
+
+                <div>
+                    <h3 className="text-xl">{user.name}</h3>
+                    <p>{user.email}</p>
+                    <span className="badge">{user.role.description}</span>
+                </div>
+
+                <div className="my-6 flex flex-col gap-10">
+                    <h3 className="text-xl">Permisos</h3>
+                    <p>Dado que {user.name} es un usuario adminstrador, cuenta con todos los permisos.</p>
+                </div>
+            </>
+        );
+    }
+
     return (
         <>
             <BackButton uri={`/dashboard/users`} />
