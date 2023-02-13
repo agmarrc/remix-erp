@@ -3428,6 +3428,10 @@ html {
   align-items: flex-start;
 }
 
+.items-center {
+  align-items: center;
+}
+
 .justify-end {
   justify-content: flex-end;
 }
@@ -3442,6 +3446,10 @@ html {
 
 .gap-3 {
   gap: 0.75rem;
+}
+
+.gap-5 {
+  gap: 1.25rem;
 }
 
 .rounded-lg {

@@ -41,7 +41,7 @@ export const action = async ({ params, request }: ActionArgs) => {
         });
     }
     await db.catalogue.delete({ where: { id: params.catalogueId } });
-    return redirect("/dashboard/catalogues");
+    return redirect("/dashboard");
 }
 
 export default function Catalogue() {
@@ -50,7 +50,7 @@ export default function Catalogue() {
 
     return (
         <>
-            <BackButton uri="/dashboard/catalogues" />
+            <BackButton uri="/dashboard" />
             <CardContainer>
                 <div className="card w-full card-compact bg-base-100 shadow-xl">
                     <div className="card-body">
@@ -64,15 +64,18 @@ export default function Catalogue() {
                     </div>
                 </div>
             </CardContainer>
-            <h3 className="text-xl">Empresas en este catálogo</h3>
-            <CardContainer>
-                {companies.length === 0
-                    ? <h3>Aún no hay empresas.</h3>
-                    : <CardContainer>
-                        {companies.map((company) => <CompanyCard company={company} key={company.id} />)}
-                    </CardContainer>
-                }
-            </CardContainer>
+
+            <div className="flex gap-5 justify-between">
+                <h3 className="text-xl">Empresas en este catálogo</h3>
+                <Link to={`/dashboard/companies/new/${catalogue.id}`} className="btn btn-primary">Nueva empresa</Link>
+            </div>
+
+            {companies.length === 0
+                ? <h3>Aún no hay empresas.</h3>
+                : <CardContainer>
+                    {companies.map((company) => <CompanyCard company={company} key={company.id} />)}
+                </CardContainer>
+            }
         </>
     );
 }

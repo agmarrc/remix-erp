@@ -38,7 +38,7 @@ export const action = async ({ params, request }: ActionArgs) => {
     });
 
     await db.location.delete({ where: { id: params.locationId } });
-    return redirect("/dashboard/locations");
+    return redirect(`/dashboard/companies/show/${location.companyId}`);
 }
 
 export default function ShowLocation() {
@@ -47,7 +47,7 @@ export default function ShowLocation() {
 
     return (
         <>
-            <BackButton uri="/dashboard/locations" />
+            <BackButton uri={`/dashboard/companies/show/${location.companyId}`} />
             <CardContainer>
                 <div className="card w-full card-compact bg-base-100 shadow-xl">
                     <div className="card-body">
@@ -61,15 +61,18 @@ export default function ShowLocation() {
                     </div>
                 </div>
             </CardContainer>
-            <h3 className="text-xl">Módulos en esta sede</h3>
-            <CardContainer>
+            
+            <div className="flex gap-5 justify-between">
+                <h3 className="text-xl">Módulos en esta sede</h3>
+                <Link to={`/dashboard/modules/new/${location.id}`} className="btn btn-primary">Nuevo módulo</Link>
+            </div>
+
                 {modules.length === 0
                     ? <h3>Aún no hay módulos.</h3>
                     : <CardContainer>
                         {modules.map((module) => <ModuleCard module={module} key={module.id} />)}
                     </CardContainer>
                 }
-            </CardContainer>
         </>
     )
 }

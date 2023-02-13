@@ -1,30 +1,37 @@
-import type { LoaderArgs } from "@remix-run/node"
-import { Link, useLoaderData } from "@remix-run/react";
-import { getUser } from "~/utils/session.server"
+import { json } from "@remix-run/node";
+import { Link, Outlet, useLoaderData } from "@remix-run/react";
+import CardContainer from "~/components/CardContainer";
+import CatalogueCard from "~/components/CatalogueCard";
+import { db } from "~/utils/db.server";
 
-export const loader = async ({ request }: LoaderArgs) => {
-    const user = await getUser(request);
-
-    return ({ user });
-}
+export const loader = async () => {
+    const catalogues = await db.catalogue.findMany({
+        include: {
+            _count: {
+                select: { companies: true, locations: true, modules: true }
+            }
+        }
+    })
+    return json({ catalogues });
+};
 
 export default function DashboardIndex() {
+    const { catalogues } = useLoaderData<typeof loader>();
 
-    const { user } = useLoaderData<typeof loader>();
-
-    return (
-        <div className="mt-10">
-            <div className="">
-                <h2 className="text-xl">Bienvenido, {user?.name}</h2>
-                <p>¿A qué quieres acceder hoy?</p>
-
-                <div className="my-3 flex flex-col items-start gap-3">
-                    <Link className="link link-accent" to="catalogues">Catálogos</Link>
-                    <Link className="link link-accent" to="companies">Empresas</Link>
-                    <Link className="link link-accent" to="locations">Sedes</Link>
-                    <Link className="link link-accent" to="modules">Módulos</Link>
-                </div>
-            </div>
+    return <div className="mt-10">
+        <div className="flex w-100 justify-between">
+            <h2 className="text-xl">Catálogos</h2>
+            <Link to="/dashboard/catalogues/new" className="btn btn-primary">Nuevo catálogo</Link>
         </div>
-    )
+
+        <Outlet />
+
+        {catalogues.length === 0
+            ? <h3>Aún no hay catálogos.</h3>
+            : <CardContainer>
+                {catalogues.map((catalogue) => <CatalogueCard catalogue={catalogue} key={catalogue.id} />)}
+            </CardContainer>
+        }
+
+    </div>
 }

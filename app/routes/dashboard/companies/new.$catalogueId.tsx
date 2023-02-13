@@ -1,6 +1,6 @@
 import type { ActionArgs} from "@remix-run/node";
-import { json, redirect } from "@remix-run/node";
-import { Form, useActionData, useLoaderData } from "@remix-run/react";
+import { redirect} from "@remix-run/node";
+import { Form, useActionData, useParams } from "@remix-run/react";
 import BackButton from "~/components/BackButton";
 import FormError from "~/components/FormError";
 import { db } from "~/utils/db.server";
@@ -18,15 +18,10 @@ function validateCatalogueId(catalogueId: unknown) {
     }
 }
 
-export const loader = async () => {
-    const catalogues = await db.catalogue.findMany();
-    return json({ catalogues });
-}
-
-export const action = async ({ request }: ActionArgs) => {
+export const action = async ({ params, request }: ActionArgs) => {
     const form = await request.formData();
     const name = form.get("name");
-    const catalogueId = form.get("catalogueId");
+    const catalogueId = params.catalogueId;
 
     if (
         typeof name !== "string" ||
@@ -55,23 +50,17 @@ export const action = async ({ request }: ActionArgs) => {
         data: { ...fields }
     });
 
-    return redirect('/dashboard/companies');
+    return redirect(`/dashboard/catalogues/show/${params.catalogueId}`);
 }
 
 export default function NewCompany() {
-    const { catalogues } = useLoaderData<typeof loader>();
     const actionData = useActionData<typeof action>();
+    const params = useParams();
 
     return (
         <div>
-            <BackButton uri="/dashboard/companies" />
+            <BackButton uri={`/dashboard/catalogues/show/${params.catalogueId}`} />
             <Form method="post">
-                <div className="my-6">
-                    <select className="select w-full max-w-xs" name="catalogueId">
-                        {catalogues.map((catalogue) => <option key={catalogue.id} value={catalogue.id}>{catalogue.name}</option>)}
-                    </select>
-                    <FormError error={actionData?.fieldErrors?.catalogueId} />
-                </div>
                 <div className="my-6">
                     <input type="text" name="name" placeholder="Nombre de la empresa" className="input input-bordered w-full max-w-xs" />
                     <FormError error={actionData?.fieldErrors?.name} />

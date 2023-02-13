@@ -34,7 +34,7 @@ export const action = async ({ params, request }: ActionArgs) => {
     });
 
     await db.module.delete({ where: { id: params.moduleId } });
-    return redirect("/dashboard/modules");
+    return redirect(`/dashboard/locations/show/${module.locationId}`);
 }
 
 export default function ShowModule() {
@@ -42,7 +42,7 @@ export default function ShowModule() {
 
     return (
         <>
-            <BackButton uri="/dashboard/modules" />
+            <BackButton uri={`/dashboard/locations/show/${module.locationId}`} />
             <CardContainer>
                 <div className="card w-full card-compact bg-base-100 shadow-xl">
                     <div className="card-body">

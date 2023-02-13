@@ -41,7 +41,7 @@ export const action = async ({ request }: ActionArgs) => {
         data: { ...fields }
     });
 
-    return redirect('/dashboard/catalogues');
+    return redirect('/dashboard');
 }
 
 export default function NewCatalogue() {
@@ -49,7 +49,7 @@ export default function NewCatalogue() {
 
     return (
         <div>
-            <BackButton uri="/dashboard/catalogues" />
+            <BackButton uri="/dashboard" />
             <Form method="post">
                 <div className="my-6">
                     <input type="text" name="name" placeholder="Nombre del catálogo" className="input input-bordered w-full max-w-xs" />

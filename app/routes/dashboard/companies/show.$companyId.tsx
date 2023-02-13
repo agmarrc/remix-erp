@@ -43,7 +43,7 @@ export const action = async ({ params, request }: ActionArgs) => {
         });
     }
     await db.company.delete({ where: { id: params.companyId } });
-    return redirect("/dashboard/companies");
+    return redirect(`/dashboard/catalogues/show/${company.catalogueId}`);
 }
 
 export default function Company() {
@@ -52,7 +52,7 @@ export default function Company() {
 
     return (
         <>
-            <BackButton uri="/dashboard/companies" />
+            <BackButton uri={`/dashboard/catalogues/show/${company.catalogueId}`} />
             <CardContainer>
                 <div className="card w-full card-compact bg-base-100 shadow-xl">
                     <div className="card-body">
@@ -66,15 +66,18 @@ export default function Company() {
                     </div>
                 </div>
             </CardContainer>
-            <h3 className="text-xl">Sedes en esta empresa</h3>
-            <CardContainer>
-                {locations.length === 0
-                    ? <h3>Aún no hay sedes.</h3>
-                    : <CardContainer>
-                        {locations.map((location) => <LocationCard location={location} key={location.id} />)}
-                    </CardContainer>
-                }
-            </CardContainer>
+
+            <div className="flex gap-5 justify-between">
+                <h3 className="text-xl">Sedes en esta empresa</h3>
+                <Link to={`/dashboard/locations/new/${company.id}`} className="btn btn-primary">Nueva sede</Link>
+            </div>
+
+            {locations.length === 0
+                ? <h3>Aún no hay sedes.</h3>
+                : <CardContainer>
+                    {locations.map((location) => <LocationCard location={location} key={location.id} />)}
+                </CardContainer>
+            }
         </>
     );
 }

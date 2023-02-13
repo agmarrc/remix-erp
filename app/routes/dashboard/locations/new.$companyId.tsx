@@ -1,6 +1,6 @@
 import type { ActionArgs} from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
-import { Form, Link, useActionData, useLoaderData, useSubmit } from "@remix-run/react";
+import { Form, Link, useActionData, useLoaderData, useParams, useSubmit } from "@remix-run/react";
 import type { Coordinate } from "ol/coordinate";
 import React, { useState } from "react";
 import Alert from "~/components/Alert";
@@ -33,10 +33,10 @@ export const loader = async () => {
     return json({ companies });
 }
 
-export const action = async ({ request }: ActionArgs) => {
+export const action = async ({ params, request }: ActionArgs) => {
     const form = await request.formData();
     const name = form.get("name");
-    const companyId = form.get("companyId");
+    const companyId = params.companyId;
     const placeName = form.get("placeName");
     const latitude = form.get("latitude");
     const longitude = form.get("longitude");
@@ -84,12 +84,13 @@ export const action = async ({ request }: ActionArgs) => {
         data: { ...fields }
     })
 
-    return redirect('/dashboard/locations');
+    return redirect(`/dashboard/companies/show/${params.companyId}`);
 }
 
 export default function NewCompany() {
     const { companies } = useLoaderData<typeof loader>();
     const actionData = useActionData<typeof action>();
+    const params = useParams();
 
     const submit = useSubmit();
 
@@ -129,14 +130,8 @@ export default function NewCompany() {
 
     return (
         <div>
-            <BackButton uri="/dashboard/locations" />
+            <BackButton uri={`/dashboard/companies/show/${params.companyId}`} />
             <Form onSubmit={onSubmit} method="post">
-                <div className="my-6">
-                    <select className="select w-full max-w-xs" name="companyId">
-                        {companies.map((company) => <option key={company.id} value={company.id}>{company.name}</option>)}
-                    </select>
-                    <FormError error={actionData?.fieldErrors?.companyId} />
-                </div>
                 <div className="my-6">
                     <input type="text" name="name" placeholder="Nombre de la sede" className="input input-bordered w-full max-w-xs" />
                     <FormError error={actionData?.fieldErrors?.name} />

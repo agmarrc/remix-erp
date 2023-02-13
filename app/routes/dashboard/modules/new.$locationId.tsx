@@ -1,6 +1,6 @@
 import type { ActionArgs} from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
-import { Form, Link, useActionData, useLoaderData } from "@remix-run/react";
+import { Form, Link, useActionData, useLoaderData, useParams } from "@remix-run/react";
 import Alert from "~/components/Alert";
 import BackButton from "~/components/BackButton";
 import FormError from "~/components/FormError";
@@ -31,15 +31,10 @@ function validateWorkers(workers: unknown) {
     }
 }
 
-export const loader = async () => {
-    const locations = await db.location.findMany();
-    return json({ locations });
-}
-
-export const action = async ({ request }: ActionArgs) => {
+export const action = async ({ params, request }: ActionArgs) => {
     const form = await request.formData();
     const name = form.get("name");
-    const locationId = form.get("locationId");
+    const locationId = params.locationId;
     const workers = form.get("workers");
 
     if (
@@ -83,32 +78,17 @@ export const action = async ({ request }: ActionArgs) => {
         data: { ...fields, workers: parseInt(workers) }
     })
 
-    return redirect('/dashboard/modules');
+    return redirect(`/dashboard/locations/show/${params.locationId}`);
 }
 
 export default function NewCompany() {
-    const { locations } = useLoaderData<typeof loader>();
     const actionData = useActionData<typeof action>();
-
-    if (locations.length === 0) {
-        return (
-            <>
-                <Alert type="alert-error">Aún no tienes sedes. Primero debes crear una sede.</Alert>
-                <Link className="btn btn-primary" to="/dashboard/locations/new">Crear</Link>
-            </>
-        )
-    }
+    const params = useParams();
 
     return (
         <div>
-            <BackButton uri="/dashboard/modules" />
+            <BackButton uri={`/dashboard/locations/show/${params.locationId}`} />
             <Form method="post">
-                <div className="my-6">
-                    <select className="select w-full max-w-xs" name="locationId">
-                        {locations.map((location) => <option key={location.id} value={location.id}>{location.name}</option>)}
-                    </select>
-                    <FormError error={actionData?.fieldErrors?.locationId} />
-                </div>
                 <div className="my-6">
                     <input type="text" name="name" placeholder="Nombre del módulo" className="input input-bordered w-full max-w-xs" />
                     <FormError error={actionData?.fieldErrors?.name} />

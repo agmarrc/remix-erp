@@ -17,12 +17,6 @@ function validateName(name: unknown) {
     }
 }
 
-function validateCompanyId(companyId: unknown) {
-    if (companyId === "") {
-        return `Selecciona una empresa`;
-    }
-}
-
 function validatePlaceName(placeName: unknown) {
     if (placeName === "") {
         return `Debes ingresar el nombre de la ubicación`;
@@ -33,7 +27,6 @@ export const loader = async ({ params }: LoaderArgs) => {
     const location = await db.location.findUnique({
         where: { id: params.locationId }
     });
-    const companies = await db.company.findMany();
 
     if (!location) {
         throw new Response("No se encontró el recurso", {
@@ -41,20 +34,18 @@ export const loader = async ({ params }: LoaderArgs) => {
         });
     }
 
-    return json({ location, companies });
+    return json({ location });
 }
 
 export const action = async ({ params, request }: ActionArgs) => {
     const form = await request.formData();
     const name = form.get('name');
-    const companyId = form.get("companyId");
     const placeName = form.get("placeName");
     const latitude = form.get("latitude");
     const longitude = form.get("longitude");
 
     if (
         typeof name !== "string" ||
-        typeof companyId !== "string" ||
         typeof placeName !== "string" ||
         typeof latitude !== "string" ||
         typeof longitude !== "string"
@@ -66,21 +57,9 @@ export const action = async ({ params, request }: ActionArgs) => {
         });
     }
 
-    const company = await db.company.findUnique({
-        where: { id: companyId }
-    });
-
-    if (!company) {
-        throw new Response('No se encontró la empresa', {
-            status: 404
-        })
-    }
-
-    const catalogueId = company.catalogueId;
-    const fields = { name, companyId, catalogueId, placeName, latitude, longitude };
+    const fields = { name, placeName, latitude, longitude };
     const fieldErrors = {
         name: validateName(name),
-        companyId: validateCompanyId(companyId),
         placeName: validatePlaceName(placeName)
     };
     if (Object.values(fieldErrors).some(Boolean)) {
@@ -104,7 +83,7 @@ export const action = async ({ params, request }: ActionArgs) => {
 }
 
 export default function EditLocation() {
-    const { location, companies } = useLoaderData<typeof loader>();
+    const { location } = useLoaderData<typeof loader>();
     const actionData = useActionData();
 
     const submit = useSubmit();
@@ -134,26 +113,11 @@ export default function EditLocation() {
         });
     }
 
-    if (companies.length === 0) {
-        return (
-            <>
-                <Alert type="alert-error">Aún no tienes empresas. Primero debes crear una empresa.</Alert>
-                <Link className="btn btn-primary" to="/dashboard/companies/new">Crear</Link>
-            </>
-        )
-    }
-
     return (
         <div className="mt-6">
             <BackButton uri={`/dashboard/locations/show/${location.id}`} />
             <h3 className="text-xl">Editar</h3>
             <Form onSubmit={onSubmit} method="post">
-                <div className="my-6">
-                    <select className="select w-full max-w-xs" name="companyId">
-                        {companies.map((company) => <option key={company.id} value={company.id}>{company.name}</option>)}
-                    </select>
-                    <FormError error={actionData?.fieldErrors?.companyId} />
-                </div>
                 <div className="my-6">
                     <input type="text" name="name" placeholder="Nombre de la sede" defaultValue={location.name} className="input input-bordered w-full max-w-xs" />
                     <FormError error={actionData?.fieldErrors?.name} />
