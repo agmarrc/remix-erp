@@ -1,6 +1,6 @@
 import type { ActionArgs, LoaderArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
-import { Form, Link, useActionData, useCatch, useLoaderData, useSubmit } from "@remix-run/react";
+import { Form, useActionData, useCatch, useLoaderData, useSubmit } from "@remix-run/react";
 import type { Coordinate } from "ol/coordinate";
 import { useState } from "react";
 import { redirect, useParams } from "react-router";
@@ -41,14 +41,14 @@ export const action = async ({ params, request }: ActionArgs) => {
     const form = await request.formData();
     const name = form.get('name');
     const placeName = form.get("placeName");
-    const latitude = form.get("latitude");
     const longitude = form.get("longitude");
+    const latitude = form.get("latitude");
 
     if (
         typeof name !== "string" ||
         typeof placeName !== "string" ||
-        typeof latitude !== "string" ||
-        typeof longitude !== "string"
+        typeof longitude !== "string" ||
+        typeof latitude !== "string"
     ) {
         return badRequest({
             fieldErrors: null,

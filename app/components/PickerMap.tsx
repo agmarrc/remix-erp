@@ -75,11 +75,11 @@ export default function PickerMap({ onPickLocation, hasMarker, longitude, latitu
     }, [position, mapRef]);
 
     useEffect(() => {
-        if (latitude && longitude) {
+        if (longitude && latitude) {
             setPosition([longitude, latitude]);
         } else {
             navigator.geolocation.getCurrentPosition((position) => {
-                const {latitude, longitude} = position.coords;
+                const {longitude, latitude} = position.coords;
                 setPosition([longitude, latitude]);
             }, null);
         }

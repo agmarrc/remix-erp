@@ -6,11 +6,11 @@ import { useEffect, useRef } from "react";
 import { generateMarker } from "~/utils/map.client";
 
 interface Props {
-    latitude: number;
     longitude: number;
+    latitude: number;
 }
 
-export default function LocationMap({latitude, longitude}: Props) {
+export default function LocationMap({longitude, latitude}: Props) {
     const mapRef = useRef(null);
 
     const zoom = 13;

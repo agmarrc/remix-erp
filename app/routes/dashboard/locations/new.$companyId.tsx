@@ -38,15 +38,15 @@ export const action = async ({ params, request }: ActionArgs) => {
     const name = form.get("name");
     const companyId = params.companyId;
     const placeName = form.get("placeName");
-    const latitude = form.get("latitude");
     const longitude = form.get("longitude");
+    const latitude = form.get("latitude");
 
     if (
         typeof name !== "string" ||
         typeof companyId !== "string" ||
         typeof placeName !== "string" ||
-        typeof latitude !== "string" ||
-        typeof longitude !== "string"
+        typeof longitude !== "string" ||
+        typeof latitude !== "string"
     ) {
         return badRequest({
             fieldErrors: null,
