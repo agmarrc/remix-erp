@@ -32,9 +32,9 @@ model Role {
 
 model CataloguePermission {
   id String @id @default(uuid())
-  user User@relation(fields: userId, references: [id])
+  user User@relation(fields: userId, references: [id], onDelete: Cascade)
   userId String
-  catalogue Catalogue @relation(fields: catalogueId, references: [id])
+  catalogue Catalogue @relation(fields: catalogueId, references: [id], onDelete: Cascade)
   catalogueId String
   create Boolean @default(false)
   edit Boolean @default(false)
@@ -43,9 +43,9 @@ model CataloguePermission {
 
 model CompanyPermission {
   id String @id @default(uuid())
-  user User@relation(fields: userId, references: [id])
+  user User@relation(fields: userId, references: [id], onDelete: Cascade)
   userId String
-  company Company @relation(fields: companyId, references: [id])
+  company Company @relation(fields: companyId, references: [id], onDelete: Cascade)
   companyId String
   create Boolean @default(false)
   edit Boolean @default(false)
@@ -54,9 +54,9 @@ model CompanyPermission {
 
 model LocationPermission {
   id String @id @default(uuid())
-  user User@relation(fields: userId, references: [id])
+  user User@relation(fields: userId, references: [id], onDelete: Cascade)
   userId String
-  location Location @relation(fields: locationId, references: [id])
+  location Location @relation(fields: locationId, references: [id], onDelete: Cascade)
   locationId String
   create Boolean @default(false)
   edit Boolean @default(false)
@@ -65,9 +65,9 @@ model LocationPermission {
 
 model ModulePermission {
   id String @id @default(uuid())
-  user User@relation(fields: userId, references: [id])
+  user User@relation(fields: userId, references: [id], onDelete: Cascade)
   userId String
-  module Module @relation(fields: moduleId, references: [id])
+  module Module @relation(fields: moduleId, references: [id], onDelete: Cascade)
   moduleId String
   create Boolean @default(false)
   edit Boolean @default(false)

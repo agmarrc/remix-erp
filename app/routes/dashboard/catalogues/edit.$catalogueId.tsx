@@ -7,6 +7,7 @@ import BackButton from "~/components/BackButton";
 import FormError from "~/components/FormError";
 import { db } from "~/utils/db.server";
 import { badRequest } from "~/utils/request.server";
+import { requireUserId } from "~/utils/session.server";
 
 function validateName(name: unknown) {
     if (name === "") {
@@ -14,7 +15,17 @@ function validateName(name: unknown) {
     }
 }
 
-export const loader = async ({ params }: LoaderArgs) => {
+export const loader = async ({ params, request }: LoaderArgs) => {
+    const userId = await requireUserId(request);
+
+    const permission = await db.cataloguePermission.findFirst({
+        where: {catalogueId: params.catalogueId, userId: userId, edit: true}
+    });
+
+    if (!permission) throw new Response('No tienes permisos para eliminar este recurso', {
+        status: 403
+    });
+
     const catalogue = await db.catalogue.findUnique({
         where: { id: params.catalogueId }
     });
@@ -30,6 +41,16 @@ export const loader = async ({ params }: LoaderArgs) => {
 export const action = async ({ params, request }: ActionArgs) => {
     const form = await request.formData();
     const name = form.get('name');
+
+    const userId = await requireUserId(request);
+
+    const permission = await db.cataloguePermission.findFirst({
+        where: {catalogueId: params.catalogueId, userId: userId, edit: true}
+    });
+
+    if (!permission) throw new Response(`No tienes permisos para eliminar este recurso`, {
+        status: 403
+    });
 
     if (typeof name !== "string") {
         return badRequest({
@@ -86,17 +107,17 @@ export default function EditCatalogue() {
 
 export function CatchBoundary() {
     const caught = useCatch();
-    const params = useParams();
+    
     switch (caught.status) {
         case 400: {
             return <Alert type="alert-error">Acción no permitida</Alert>
         }
         case 404: {
-            return <Alert type="alert-error">No se encontró el catálogo con id {params.catalogueId}</Alert>
+            return <Alert type="alert-error">{caught.data}</Alert>
 
         }
         case 403: {
-            return <Alert type="alert-error">No puedes editar el catálogo con id {params.catalogueId} porque no tienes permisos suficientes</Alert>
+            return <Alert type="alert-error">{caught.data}</Alert>
         }
         default: {
             throw new Error(`Unhandled error: ${caught.status}`);

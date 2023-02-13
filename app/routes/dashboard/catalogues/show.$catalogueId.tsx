@@ -6,8 +6,22 @@ import BackButton from "~/components/BackButton";
 import CardContainer from "~/components/Cards/CardContainer";
 import CompanyCard from "~/components/Cards/CompanyCard";
 import { db } from "~/utils/db.server";
+import { requireUserId } from "~/utils/session.server";
 
-export const loader = async ({ params }: LoaderArgs) => {
+export const loader = async ({ params, request }: LoaderArgs) => {
+    const userId = await requireUserId(request);
+
+    const editPermission = await db.cataloguePermission.findFirst({
+        where: { catalogueId: params.catalogueId, userId: userId, edit: true }
+    });
+
+    const destroyPermission = await db.cataloguePermission.findFirst({
+        where: { catalogueId: params.catalogueId, userId: userId, destroy: true }
+    });
+
+    const canEdit = editPermission ? true : false;
+    const canDestroy = destroyPermission ? true : false;
+
     const catalogue = await db.catalogue.findUnique({
         where: { id: params.catalogueId },
         include: {
@@ -21,16 +35,26 @@ export const loader = async ({ params }: LoaderArgs) => {
         }
     });
     if (!catalogue) {
-        throw new Response("Catálogo no encontrado", {
+        throw new Response("Recurso no encontrado", {
             status: 404
         });
     }
-    return json({ catalogue });
+    return json({ catalogue, canDestroy, canEdit });
 }
 
 export const action = async ({ params, request }: ActionArgs) => {
     const form = await request.formData();
     if (form.get('intent') !== 'delete') return null;
+
+    const userId = await requireUserId(request);
+
+    const canDestroy = await db.cataloguePermission.findFirst({
+        where: { catalogueId: params.catalogueId, userId: userId, destroy: true }
+    });
+
+    if (!canDestroy) throw new Response("No tienes permisos para eliminar este recurso", {
+        status: 403
+    });
 
     const catalogue = await db.catalogue.findUnique({
         where: { id: params.catalogueId },
@@ -45,7 +69,7 @@ export const action = async ({ params, request }: ActionArgs) => {
 }
 
 export default function Catalogue() {
-    const { catalogue } = useLoaderData<typeof loader>();
+    const { catalogue, canDestroy, canEdit } = useLoaderData<typeof loader>();
     const companies = catalogue.companies;
 
     return (
@@ -61,10 +85,16 @@ export default function Catalogue() {
                             {catalogue.name}
                         </h2>
                         <div className="card-actions justify-end">
-                            <Link to={`/dashboard/catalogues/edit/${catalogue.id}`} className="btn btn-primary">Editar</Link>
-                            <Form method="post">
-                                <button className="btn btn-secondary" name="intent" value="delete">Eliminar</button>
-                            </Form>
+                            {
+                                canEdit &&
+                                <Link to={`/dashboard/catalogues/edit/${catalogue.id}`} className="btn btn-primary">Editar</Link>
+                            }
+                            {
+                                canDestroy &&
+                                <Form method="post">
+                                    <button className="btn btn-secondary" name="intent" value="delete">Eliminar</button>
+                                </Form>
+                            }
                         </div>
                     </div>
                 </div>
@@ -87,17 +117,17 @@ export default function Catalogue() {
 
 export function CatchBoundary() {
     const caught = useCatch();
-    const params = useParams();
+
     switch (caught.status) {
         case 400: {
-            return <Alert type="alert-error">Acción no permitida</Alert>
+            return <Alert type="alert-error">{caught.data}</Alert>
         }
         case 404: {
-            return <Alert type="alert-error">No se encontró el catálogo con id {params.catalogueId}</Alert>
+            return <Alert type="alert-error">{caught.data}</Alert>
 
         }
         case 403: {
-            return <Alert type="alert-error">No puedes eliminar el catálogo con id {params.catalogueId} porque no tienes permisos suficientes</Alert>
+            return <Alert type="alert-error">{caught.data}</Alert>
         }
         default: {
             throw new Error(`Unhandled error: ${caught.status}`);

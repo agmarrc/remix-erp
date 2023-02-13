@@ -36,7 +36,7 @@ export default function CataloguePermissions({ actionData, permissions, resource
         <div>
             <div className="flex items-center justify-between">
                 <h4 className="text-xl">Catálogos</h4>
-                <label htmlFor="newCataloguePermissionModal" className="btn btn-sm">Nuevo permiso</label>
+                <label htmlFor="newCataloguePermissionModal" className="btn btn-sm">Gestionar permiso</label>
             </div>
             {permissions.length === 0
                 ? <p>Sin permisos</p>
@@ -46,7 +46,7 @@ export default function CataloguePermissions({ actionData, permissions, resource
             <div className="modal">
                 <div className="modal-box">
                     <Form method="post">
-                        <h3 className="font-bold text-lg">Nuevo permiso de catálogo</h3>
+                        <h3 className="font-bold text-lg">Gestionar permiso de catálogo</h3>
                         <div className="my-6">
                             <select name="resourceId" className="select w-full max-w-xs">
                                 {resources.map((resource) => <option value={resource.id} key={resource.id}>{resource.name}</option>)}

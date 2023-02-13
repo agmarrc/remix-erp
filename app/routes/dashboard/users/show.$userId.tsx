@@ -85,6 +85,10 @@ export const action = async ({ params, request }: ActionArgs) => {
             await db.cataloguePermission.create({
                 data: { catalogueId: resourceId, userId: params.userId, create: create, edit: edit, destroy: destroy }
             });
+            await db.cataloguePermission.updateMany({
+                where: { userId: params.userId },
+                data: { create }
+            });
             return redirect(`/dashboard/users/show/${params.userId}`);
         }
         case 'company': {
@@ -93,6 +97,10 @@ export const action = async ({ params, request }: ActionArgs) => {
             });
             await db.companyPermission.create({
                 data: { companyId: resourceId, userId: params.userId, create: create, edit: edit, destroy: destroy }
+            });
+            await db.companyPermission.updateMany({
+                where: { userId: params.userId },
+                data: { create }
             });
             return redirect(`/dashboard/users/show/${params.userId}`);
         }
@@ -103,6 +111,10 @@ export const action = async ({ params, request }: ActionArgs) => {
             await db.locationPermission.create({
                 data: { locationId: resourceId, userId: params.userId, create: create, edit: edit, destroy: destroy }
             });
+            await db.locationPermission.updateMany({
+                where: { userId: params.userId },
+                data: { create }
+            });
             return redirect(`/dashboard/users/show/${params.userId}`);
         }
         case 'module': {
@@ -111,6 +123,10 @@ export const action = async ({ params, request }: ActionArgs) => {
             });
             await db.modulePermission.create({
                 data: { moduleId: resourceId, userId: params.userId, create: create, edit: edit, destroy: destroy }
+            });
+            await db.modulePermission.updateMany({
+                where: { userId: params.userId },
+                data: { create }
             });
             return redirect(`/dashboard/users/show/${params.userId}`);
         }
