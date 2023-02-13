@@ -1,9 +1,15 @@
-import { json } from "@remix-run/node";
+import type { LoaderArgs} from "@remix-run/node";
+import { json, redirect } from "@remix-run/node";
 import { Link, useLoaderData } from "@remix-run/react";
 import UsersTable from "~/components/UsersTable";
 import { db } from "~/utils/db.server";
+import { getUser } from "~/utils/session.server";
 
-export const loader = async () => {
+export const loader = async ({request}: LoaderArgs) => {
+    const user = await getUser(request);
+
+    if (user?.role.privileges !== 1) return redirect('/dashboard');
+
     const users = await db.user.findMany({
         select: { email: true, id: true, name: true, role: true },
     });

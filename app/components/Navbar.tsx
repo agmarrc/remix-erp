@@ -1,7 +1,11 @@
 import { Form, Link } from "@remix-run/react";
 import { APP_TITLE } from "~/data/constants";
 
-export default function Navbar() {
+interface Props {
+    isAdmin: boolean;
+}
+
+export default function Navbar({ isAdmin }: Props) {
     return (
         <div className="navbar bg-base-100">
             <div className="navbar-start">
@@ -13,9 +17,12 @@ export default function Navbar() {
                         <li>
                             <Link to="/dashboard">Inicio</Link>
                         </li>
-                        <li>
-                            <Link to="/dashboard/users">Usuarios</Link>
-                        </li>
+                        {
+                            isAdmin &&
+                            <li>
+                                <Link to="/dashboard/users">Usuarios</Link>
+                            </li>
+                        }
                         <li>
                             <Form action="/auth/logout" method="post">
                                 <button type="submit">
