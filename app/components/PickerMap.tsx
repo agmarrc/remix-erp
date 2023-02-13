@@ -4,17 +4,23 @@ import TileLayer from "ol/layer/Tile";
 import { useGeographic } from "ol/proj";
 import { useEffect, useRef, useState } from "react";
 import type { Coordinate } from "ol/coordinate";
+import type VectorLayer from "ol/layer/Vector";
+import type VectorSource from "ol/source/Vector";
+import type { Point } from "ol/geom";
+import { generateMarker } from "~/utils/map.client";
 
 interface Props {
     onPickLocation: (coordinate: Coordinate) => void;
 }
 
-export default function PickerMap({onPickLocation}: Props) {
+let marker: VectorLayer<VectorSource<Point>> | null = null;;
+
+export default function PickerMap({ onPickLocation }: Props) {
     const mapRef = useRef(null);
     const [position, setPosition] = useState<GeolocationPosition | null>(null);
 
     const zoom = 13;
-    
+
     useGeographic();
 
     useEffect(() => {
@@ -37,7 +43,21 @@ export default function PickerMap({onPickLocation}: Props) {
         let mapObject = new Map(options);
         mapObject.setTarget(mapRef.current);
         mapObject.on('click', (e) => {
-            const {coordinate} = e;
+            const { coordinate } = e;
+
+            const x = coordinate[0];
+            const y = coordinate[1];
+
+            if (marker) {
+                mapObject.removeLayer(marker);
+                marker = null;
+            }
+
+            const vectorLayer = generateMarker(x, y);
+            marker = vectorLayer;
+
+            mapObject.addLayer(vectorLayer);
+
             onPickLocation(coordinate);
         })
         return () => mapObject.setTarget(undefined);
