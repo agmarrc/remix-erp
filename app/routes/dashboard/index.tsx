@@ -1,7 +1,7 @@
 import { json } from "@remix-run/node";
 import { Link, useLoaderData } from "@remix-run/react";
-import CardContainer from "~/components/CardContainer";
-import CatalogueCard from "~/components/CatalogueCard";
+import CardContainer from "~/components/Cards/CardContainer";
+import CatalogueCard from "~/components/Cards/CatalogueCard";
 import { db } from "~/utils/db.server";
 
 export const loader = async () => {

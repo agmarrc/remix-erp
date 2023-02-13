@@ -4,7 +4,7 @@ import { json } from "@remix-run/node";
 import { Form, Link, useCatch, useLoaderData, useParams } from "@remix-run/react";
 import Alert from "~/components/Alert";
 import BackButton from "~/components/BackButton";
-import CardContainer from "~/components/CardContainer";
+import CardContainer from "~/components/Cards/CardContainer";
 import { db } from "~/utils/db.server";
 
 export const loader = async ({ params }: LoaderArgs) => {

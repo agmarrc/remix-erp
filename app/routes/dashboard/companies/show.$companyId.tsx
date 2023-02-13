@@ -3,8 +3,8 @@ import { json, redirect } from "@remix-run/node";
 import { Form, Link, useCatch, useLoaderData, useParams } from "@remix-run/react";
 import Alert from "~/components/Alert";
 import BackButton from "~/components/BackButton";
-import CardContainer from "~/components/CardContainer";
-import LocationCard from "~/components/LocationCard";
+import CardContainer from "~/components/Cards/CardContainer";
+import LocationCard from "~/components/Cards/LocationCard";
 import { db } from "~/utils/db.server";
 
 export const loader = async ({ params }: LoaderArgs) => {

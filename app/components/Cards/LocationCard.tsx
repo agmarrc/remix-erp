@@ -1,6 +1,6 @@
 import type { Location } from "@prisma/client";
 import { Link } from "@remix-run/react";
-import LocationMap from "./LocationMap";
+import LocationMap from "../LocationMap";
 
 interface Props {
     location: Location & {
