@@ -1,6 +1,10 @@
-import type { Location, LocationPermission } from "@prisma/client";
+import type { Module, ModulePermission } from "@prisma/client";
 import { Form } from "@remix-run/react";
-import FormError from "./FormError";
+import FormError from "../FormError";
+
+type Permission = ModulePermission & {
+    module: Module;
+};
 
 interface Props {
     actionData: {
@@ -8,26 +12,41 @@ interface Props {
         fields: null;
         formError: string;
     } | undefined;
-    permissions: LocationPermission[],
-    resources: Location[]
+    permissions: Permission[],
+    resources: Module[]
 }
 
-export default function LocationPermissions({ actionData, permissions, resources }: Props) {
+interface PermissionProps {
+    permission: Permission;
+}
+
+function PermissionDetail({ permission }: PermissionProps) {
+    return (
+        <div className="flex flex-col sm:flex-row items-center gap-3 my-2">
+            <span className="text-xl">{permission.module.name}</span>
+            <div className={`badge ${permission.create && 'badge-accent'}`}>Crear</div>
+            <div className={`badge ${permission.edit && 'badge-accent'}`}>Editar</div>
+            <div className={`badge ${permission.destroy && 'badge-accent'}`}>Eliminar</div>
+        </div>
+    )
+}
+
+export default function ModulePermissions({ actionData, permissions, resources }: Props) {
     return (
         <div>
-            <div className="flex items-center gap-5">
-                <h4>Sedes</h4>
-                <label htmlFor="newLocationPermissionModal" className="btn btn-sm">Nuevo permiso</label>
+            <div className="flex items-center justify-between">
+                <h4 className="text-xl">Módulos</h4>
+                <label htmlFor="newModulePermissionModal" className="btn btn-sm">Nuevo permiso</label>
             </div>
             {permissions.length === 0
                 ? <p>Sin permisos</p>
-                : permissions.map((permission) => <p key={permission.id}>{JSON.stringify(permission)}</p>)}
+                : permissions.map((permission) => <PermissionDetail key={permission.id} permission={permission} />)}
 
-            <input type="checkbox" id="newLocationPermissionModal" className="modal-toggle" />
+            <input type="checkbox" id="newModulePermissionModal" className="modal-toggle" />
             <div className="modal">
                 <div className="modal-box">
                     <Form method="post">
-                        <h3 className="font-bold text-lg">Nuevo permiso de sede</h3>
+                        <h3 className="font-bold text-lg">Nuevo permiso de módulo</h3>
                         <div className="my-6">
                             <select name="resourceId" className="select w-full max-w-xs">
                                 {resources.map((resource) => <option value={resource.id} key={resource.id}>{resource.name}</option>)}
@@ -51,9 +70,9 @@ export default function LocationPermissions({ actionData, permissions, resources
                                 <span className="label-text">Eliminar</span>
                             </label>
                         </div>
-                        <input type="hidden" name="permission" value="location" />
+                        <input type="hidden" name="permission" value="module" />
                         <div className="modal-action">
-                            <label htmlFor="newLocationPermissionModal" className="btn">Cerrar</label>
+                            <label htmlFor="newModulePermissionModal" className="btn">Cerrar</label>
                             <button className="btn btn-primary">Guardar</button>
                         </div>
                         <FormError error={actionData?.formError} />

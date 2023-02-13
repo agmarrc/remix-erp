@@ -5,10 +5,10 @@ import { useActionData, useLoaderData } from "@remix-run/react";
 import BackButton from "~/components/BackButton";
 import { db } from "~/utils/db.server";
 import { badRequest } from "~/utils/request.server";
-import CataloguePermissions from "~/components/CataloguePermissions";
-import CompanyPermissions from "~/components/CompanyPermissions";
-import LocationPermissions from "~/components/LocationPermissions";
-import ModulePermissions from "~/components/ModulePermissions";
+import CataloguePermissions from "~/components/Permissions/CataloguePermissions";
+import CompanyPermissions from "~/components/Permissions/CompanyPermissions";
+import LocationPermissions from "~/components/Permissions/LocationPermissions";
+import ModulePermissions from "~/components/Permissions/ModulePermissions";
 
 export const loader = async ({ params }: LoaderArgs) => {
     const user = await db.user.findUnique({
@@ -18,10 +18,26 @@ export const loader = async ({ params }: LoaderArgs) => {
             email: true,
             id: true,
             role: true,
-            cataloguePermissions: true,
-            companyPermissions: true,
-            locationPermissions: true,
-            modulePermissions: true,
+            cataloguePermissions: {
+                include: {
+                    catalogue: true
+                }
+            },
+            companyPermissions: {
+                include: {
+                    company: true
+                }
+            },
+            locationPermissions: {
+                include: {
+                    location: true
+                }
+            },
+            modulePermissions: {
+                include: {
+                    module: true
+                }
+            },
         }
     });
 
@@ -120,7 +136,7 @@ export default function ShowUser() {
                 <span className="badge">{user.role.description}</span>
             </div>
 
-            <div className="my-6 flex flex-col gap-10">
+            <div className="my-6 flex flex-col gap-20">
                 <h3 className="text-xl">Permisos</h3>
 
                 <CataloguePermissions actionData={actionData} permissions={cataloguePermissions} resources={catalogues} />
