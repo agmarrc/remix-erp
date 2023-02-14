@@ -1,10 +1,10 @@
-import type { ActionArgs, LoaderArgs} from "@remix-run/node";
-import { json, redirect } from "@remix-run/node";
-import { Form, Link, useActionData } from "@remix-run/react";
+import type { ActionArgs } from "@remix-run/node";
+import { Form, useActionData } from "@remix-run/react";
+import { redirect } from "react-router";
 import FormError from "~/components/FormError";
-
+import { db } from "~/utils/db.server";
+import { sendRecoveryEmail } from "~/utils/email.server";
 import { badRequest } from "~/utils/request.server";
-import { createUserSession, getUserId, login } from "~/utils/session.server";
 
 function validateEmail(email: unknown) {
     if (typeof email !== "string" || email.length < 3) {
@@ -12,28 +12,12 @@ function validateEmail(email: unknown) {
     }
 }
 
-function validatePassword(password: unknown) {
-    if (password === "") {
-        return `Ingresa una contraseña`;
-    }
-}
-
-export const loader = async ({ request }: LoaderArgs) => {
-    const userId = await getUserId(request);
-    if (userId) {
-        return redirect('/dashboard');
-    }
-    return json({});
-};
-
 export const action = async ({ request }: ActionArgs) => {
     const form = await request.formData();
-    const email = form.get("email");
-    const password = form.get("password");
+    const email = form.get('email');
 
     if (
-        typeof email !== "string" ||
-        typeof password !== "string"
+        typeof email !== "string"
     ) {
         return badRequest({
             fieldErrors: null,
@@ -42,10 +26,9 @@ export const action = async ({ request }: ActionArgs) => {
         });
     }
 
-    const fields = { email, password };
+    const fields = { email };
     const fieldErrors = {
         email: validateEmail(email),
-        password: validatePassword(password),
     };
     if (Object.values(fieldErrors).some(Boolean)) {
         return badRequest({
@@ -55,25 +38,41 @@ export const action = async ({ request }: ActionArgs) => {
         });
     }
 
-    const user = await login({ email, password });
+    const user = await db.user.findFirst({
+        where: { email: email }
+    });
+
     if (!user) {
         return badRequest({
-            fieldErrors: null,
+            fieldErrors,
             fields,
-            formError: `Email o contraseña incorrecta`,
+            formError: "No se encontraron usuarios",
         });
     }
-    return createUserSession(`${user.id}`, '/dashboard');
+
+    await db.recovery.deleteMany({
+        where: { userId: user.id }
+    });
+
+    const recovery = await db.recovery.create({
+        data: { userId: user.id }
+    });
+
+    const recoveryUrl = `${process.env.APP_URL}/auth/reset/${recovery.id}`;
+
+    await sendRecoveryEmail(user.email, recoveryUrl);
+
+    return redirect('/auth/recovery-sended');
 }
 
-export default function Login() {
+export default function Recovery() {
     const actionData = useActionData<typeof action>();
 
     return (
         <div className="hero min-h-screen bg-base-200">
             <div className="hero-content flex-col lg:flex-row-reverse">
                 <div className="text-center lg:text-left">
-                    <h1 className="text-5xl font-bold">Inicia sesión</h1>
+                    <h1 className="text-5xl font-bold">Recupera tu cuenta</h1>
                 </div>
                 <div className="card flex-shrink-0 w-full max-w-sm shadow-2xl bg-base-100">
                     <div className="card-body">
@@ -85,18 +84,8 @@ export default function Login() {
                                 <input type="text" placeholder="my@email.com" name="email" className="input input-bordered" />
                                 <FormError error={actionData?.fieldErrors?.email} />
                             </div>
-                            <div className="form-control">
-                                <label className="label">
-                                    <span className="label-text">Contraseña</span>
-                                </label>
-                                <input type="password" placeholder="********" name="password" className="input input-bordered" />
-                                <FormError error={actionData?.fieldErrors?.password} />
-                            </div>
-                            <label className="label">
-                                <Link to="/auth/recovery" className="label-text-alt link link-hover">¿Olvidaste tu contraseña?</Link>
-                            </label>
                             <div className="form-control mt-6">
-                                <button className="btn btn-primary">Iniciar sesión</button>
+                                <button className="btn btn-primary">Enviar</button>
                             </div>
                             <FormError error={actionData?.formError} />
                         </Form>
@@ -104,5 +93,5 @@ export default function Login() {
                 </div>
             </div>
         </div>
-    );
+    )
 }

@@ -17,10 +17,17 @@ model User {
   passwordHash String
   role Role @relation(fields: [roleId], references: [id])
   roleId String
+  recovery Recovery?
   cataloguePermissions CataloguePermission[]
   companyPermissions CompanyPermission[]
   locationPermissions LocationPermission[]
   modulePermissions ModulePermission[]
+}
+
+model Recovery {
+  id String @id @default(uuid())
+  user User @relation(fields: [userId], references: [id])
+  userId String @unique
 }
 
 model Role {

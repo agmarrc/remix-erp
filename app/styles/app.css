@@ -3384,10 +3384,6 @@ html {
   margin: 1.5rem;
 }
 
-.m-0 {
-  margin: 0px;
-}
-
 .mx-2 {
   margin-left: 0.5rem;
   margin-right: 0.5rem;
@@ -3491,6 +3487,10 @@ html {
 
 .w-full {
   width: 100%;
+}
+
+.max-w-md {
+  max-width: 28rem;
 }
 
 .max-w-sm {
@@ -3620,10 +3620,6 @@ html {
 
 .p-2\.5 {
   padding: 0.625rem;
-}
-
-.p-0 {
-  padding: 0px;
 }
 
 .py-6 {
