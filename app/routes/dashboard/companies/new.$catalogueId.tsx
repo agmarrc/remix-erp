@@ -1,10 +1,12 @@
-import type { ActionArgs} from "@remix-run/node";
+import type { ActionArgs, LoaderArgs} from "@remix-run/node";
 import { redirect} from "@remix-run/node";
 import { Form, useActionData, useParams } from "@remix-run/react";
 import BackButton from "~/components/BackButton";
 import FormError from "~/components/FormError";
 import { db } from "~/utils/db.server";
+import { hasPermission } from "~/utils/permission.server";
 import { badRequest } from "~/utils/request.server";
+import { requireUserId } from "~/utils/session.server";
 
 function validateName(name: unknown) {
     if (name === "") {
@@ -16,6 +18,18 @@ function validateCatalogueId(catalogueId: unknown) {
     if (catalogueId === "") {
         return `Selecciona un catálogo`;
     }
+}
+
+export const loader = async ({params, request}: LoaderArgs) => {
+    const userId = await requireUserId(request);
+
+    const canCreate = await hasPermission({resource: 'company', query: {userId: userId, create: true}});
+
+    if (!canCreate) throw new Response("No tienes permisos para crear este recurso", {
+        status: 403
+    });
+
+    return null;
 }
 
 export const action = async ({ params, request }: ActionArgs) => {

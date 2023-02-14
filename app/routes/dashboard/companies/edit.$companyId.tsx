@@ -6,7 +6,9 @@ import Alert from "~/components/Alert";
 import BackButton from "~/components/BackButton";
 import FormError from "~/components/FormError";
 import { db } from "~/utils/db.server";
+import { hasPermission } from "~/utils/permission.server";
 import { badRequest } from "~/utils/request.server";
+import { requireUserId } from "~/utils/session.server";
 
 function validateName(name: unknown) {
     if (name === "") {
@@ -14,7 +16,15 @@ function validateName(name: unknown) {
     }
 }
 
-export const loader = async ({ params }: LoaderArgs) => {
+export const loader = async ({ params, request }: LoaderArgs) => {
+    const userId = await requireUserId(request);
+
+    const canEdit = await hasPermission({ resource: 'company', query: { companyId: params.companyId, userId: userId, edit: true } })
+
+    if (!canEdit) throw new Response('No tienes permisos para editar este recurso', {
+        status: 403
+    });
+
     const company = await db.company.findUnique({
         where: { id: params.companyId }
     });
@@ -30,6 +40,14 @@ export const loader = async ({ params }: LoaderArgs) => {
 export const action = async ({ params, request }: ActionArgs) => {
     const form = await request.formData();
     const name = form.get('name');
+
+    const userId = await requireUserId(request);
+
+    const canEdit = await hasPermission({ resource: 'company', query: { companyId: params.companyId, userId: userId, edit: true } })
+
+    if (!canEdit) throw new Response('No tienes permisos para editar este recurso', {
+        status: 403
+    });
 
     if (typeof name !== "string") {
         return badRequest({

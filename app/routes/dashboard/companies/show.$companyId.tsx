@@ -6,8 +6,18 @@ import BackButton from "~/components/BackButton";
 import CardContainer from "~/components/Cards/CardContainer";
 import LocationCard from "~/components/Cards/LocationCard";
 import { db } from "~/utils/db.server";
+import { hasPermission } from "~/utils/permission.server";
+import { requireUserId } from "~/utils/session.server";
 
-export const loader = async ({ params }: LoaderArgs) => {
+export const loader = async ({ params, request }: LoaderArgs) => {
+
+    if (!params.companyId) throw new Response("No se encontró el recurso");
+
+    const userId = await requireUserId(request);
+
+    const canEdit = await hasPermission({ resource: 'company', query: {companyId: params.companyId, userId: userId, edit: true} });
+    const canDestroy = await hasPermission({ resource: 'company', query: {companyId: params.companyId, userId: userId, destroy: true} });
+
     const company = await db.company.findUnique({
         where: { id: params.companyId },
         include: {
@@ -27,12 +37,22 @@ export const loader = async ({ params }: LoaderArgs) => {
             status: 404
         });
     }
-    return json({ company });
+    return json({ company, canDestroy, canEdit });
 }
 
 export const action = async ({ params, request }: ActionArgs) => {
+    if (!params.companyId) throw new Response("No se encontró el recurso");
+
     const form = await request.formData();
     if (form.get('intent') !== 'delete') return null;
+
+    const userId = await requireUserId(request);
+
+    const canDestroy = await hasPermission({ resource: 'company', query: {companyId: params.companyId, userId: userId, destroy: true} });
+
+    if (!canDestroy) throw new Response("No tienes permisos para eliminar este recurso", {
+        status: 403
+    });
 
     const company = await db.company.findUnique({
         where: { id: params.companyId },
@@ -47,7 +67,7 @@ export const action = async ({ params, request }: ActionArgs) => {
 }
 
 export default function Company() {
-    const { company } = useLoaderData<typeof loader>();
+    const { company, canDestroy, canEdit } = useLoaderData<typeof loader>();
     const locations = company.locations;
 
     return (
@@ -63,10 +83,16 @@ export default function Company() {
                             {company.name}
                         </h2>
                         <div className="card-actions justify-end">
-                            <Link to={`/dashboard/companies/edit/${company.id}`} className="btn btn-primary">Editar</Link>
-                            <Form method="post">
-                                <button className="btn btn-secondary" name="intent" value="delete">Eliminar</button>
-                            </Form>
+                            {
+                                canEdit &&
+                                <Link to={`/dashboard/companies/edit/${company.id}`} className="btn btn-primary">Editar</Link>
+                            }
+                            {
+                                canDestroy &&
+                                <Form method="post">
+                                    <button className="btn btn-secondary" name="intent" value="delete">Eliminar</button>
+                                </Form>
+                            }
                         </div>
                     </div>
                 </div>
@@ -89,17 +115,17 @@ export default function Company() {
 
 export function CatchBoundary() {
     const caught = useCatch();
-    const params = useParams();
+
     switch (caught.status) {
         case 400: {
-            return <Alert type="alert-error">Acción no permitida</Alert>
+            return <Alert type="alert-error">{caught.data}</Alert>
         }
         case 404: {
-            return <Alert type="alert-error">No se encontró la empresa con id {params.companyId}</Alert>
+            return <Alert type="alert-error">{caught.data}</Alert>
 
         }
         case 403: {
-            return <Alert type="alert-error">No puedes eliminar la empresa con id {params.companyId} porque no tienes permisos suficientes</Alert>
+            return <Alert type="alert-error">{caught.data}</Alert>
         }
         default: {
             throw new Error(`Unhandled error: ${caught.status}`);

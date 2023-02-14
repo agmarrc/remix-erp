@@ -6,6 +6,7 @@ import Alert from "~/components/Alert";
 import BackButton from "~/components/BackButton";
 import FormError from "~/components/FormError";
 import { db } from "~/utils/db.server";
+import { hasPermission } from "~/utils/permission.server";
 import { badRequest } from "~/utils/request.server";
 import { requireUserId } from "~/utils/session.server";
 
@@ -18,11 +19,9 @@ function validateName(name: unknown) {
 export const loader = async ({ params, request }: LoaderArgs) => {
     const userId = await requireUserId(request);
 
-    const permission = await db.cataloguePermission.findFirst({
-        where: {catalogueId: params.catalogueId, userId: userId, edit: true}
-    });
+    const canEdit = await hasPermission({ resource: 'catalogue', query: { catalogueId: params.catalogueId, userId: userId, edit: true } })
 
-    if (!permission) throw new Response('No tienes permisos para eliminar este recurso', {
+    if (!canEdit) throw new Response('No tienes permisos para edit este recurso', {
         status: 403
     });
 
@@ -44,11 +43,9 @@ export const action = async ({ params, request }: ActionArgs) => {
 
     const userId = await requireUserId(request);
 
-    const permission = await db.cataloguePermission.findFirst({
-        where: {catalogueId: params.catalogueId, userId: userId, edit: true}
-    });
+    const canEdit = await hasPermission({ resource: 'catalogue', query: { catalogueId: params.catalogueId, userId: userId, edit: true } })
 
-    if (!permission) throw new Response(`No tienes permisos para eliminar este recurso`, {
+    if (!canEdit) throw new Response('No tienes permisos para edit este recurso', {
         status: 403
     });
 
@@ -107,7 +104,7 @@ export default function EditCatalogue() {
 
 export function CatchBoundary() {
     const caught = useCatch();
-    
+
     switch (caught.status) {
         case 400: {
             return <Alert type="alert-error">Acción no permitida</Alert>

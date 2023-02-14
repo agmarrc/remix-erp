@@ -5,6 +5,7 @@ import Alert from "~/components/Alert";
 import BackButton from "~/components/BackButton";
 import FormError from "~/components/FormError";
 import { db } from "~/utils/db.server";
+import { hasPermission } from "~/utils/permission.server";
 import { badRequest } from "~/utils/request.server";
 import { requireUserId } from "~/utils/session.server";
 
@@ -14,14 +15,12 @@ function validateName(name: unknown) {
     }
 }
 
-export const loader = async ({request}: LoaderArgs) => {
+export const loader = async ({ request }: LoaderArgs) => {
     const userId = await requireUserId(request);
 
-    const canDestroy = await db.cataloguePermission.findFirst({
-        where: { userId: userId, create: true }
-    });
+    const canCreate = await hasPermission({ resource: 'catalogue', query: { userId: userId, create: true } })
 
-    if (!canDestroy) throw new Response("No tienes permisos para crear este recurso", {
+    if (!canCreate) throw new Response("No tienes permisos para crear este recurso", {
         status: 403
     });
 

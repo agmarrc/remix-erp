@@ -6,21 +6,14 @@ import BackButton from "~/components/BackButton";
 import CardContainer from "~/components/Cards/CardContainer";
 import CompanyCard from "~/components/Cards/CompanyCard";
 import { db } from "~/utils/db.server";
+import { hasPermission } from "~/utils/permission.server";
 import { requireUserId } from "~/utils/session.server";
 
 export const loader = async ({ params, request }: LoaderArgs) => {
     const userId = await requireUserId(request);
 
-    const editPermission = await db.cataloguePermission.findFirst({
-        where: { catalogueId: params.catalogueId, userId: userId, edit: true }
-    });
-
-    const destroyPermission = await db.cataloguePermission.findFirst({
-        where: { catalogueId: params.catalogueId, userId: userId, destroy: true }
-    });
-
-    const canEdit = editPermission ? true : false;
-    const canDestroy = destroyPermission ? true : false;
+    const canEdit = await hasPermission({ resource: 'catalogue', query: { catalogueId: params.catalogueId, userId: userId, edit: true } });
+    const canDestroy = await hasPermission({ resource: 'catalogue', query: { catalogueId: params.catalogueId, userId: userId, destroy: true } });
 
     const catalogue = await db.catalogue.findUnique({
         where: { id: params.catalogueId },
@@ -48,9 +41,7 @@ export const action = async ({ params, request }: ActionArgs) => {
 
     const userId = await requireUserId(request);
 
-    const canDestroy = await db.cataloguePermission.findFirst({
-        where: { catalogueId: params.catalogueId, userId: userId, destroy: true }
-    });
+    const canDestroy = await hasPermission({ resource: 'catalogue', query: { catalogueId: params.catalogueId, userId: userId, destroy: true } });
 
     if (!canDestroy) throw new Response("No tienes permisos para eliminar este recurso", {
         status: 403
