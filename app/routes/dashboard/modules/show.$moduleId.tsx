@@ -60,6 +60,7 @@ export default function ShowModule() {
                             </svg>
                             {module.name}
                         </h2>
+                        <p><strong>{module.workers} trabajadores</strong></p>
                         <div className="card-actions justify-end">
                             {
                                 canEdit &&

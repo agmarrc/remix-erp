@@ -34,7 +34,7 @@ function validateConfirmPassword(password: string, confirmPassword: unknown) {
     }
 }
 
-export const loader = async ({request}: LoaderArgs) => {
+export const loader = async ({ request }: LoaderArgs) => {
     const user = await getUser(request);
 
     if (user?.role.privileges !== 1) return redirect('/dashboard');
@@ -109,19 +109,23 @@ export default function NewUser() {
             <h3 className="text-xl">Nuevo usuario</h3>
 
             <Form method="post">
-                <div className="my-6">
+                <div className="form-control my-6">
+                    <label>Nombre</label>
                     <input type="text" name="name" placeholder="Nombre" className="input input-bordered w-full max-w-xs" />
                     <FormError error={actionData?.fieldErrors?.name} />
                 </div>
-                <div className="my-6">
+                <div className="form-control my-6">
+                    <label>Email</label>
                     <input type="email" name="email" placeholder="Email" className="input input-bordered w-full max-w-xs" />
                     <FormError error={actionData?.fieldErrors?.email} />
                 </div>
-                <div className="my-6">
+                <div className="form-control my-6">
+                    <label>Contraseña</label>
                     <input type="password" name="password" placeholder="Contraseña" className="input input-bordered w-full max-w-xs" />
                     <FormError error={actionData?.fieldErrors?.password} />
                 </div>
-                <div className="my-6">
+                <div className="form-control my-6">
+                    <label>Repite contraseña</label>
                     <input type="password" name="confirmPassword" placeholder="Repite contraseña" className="input input-bordered w-full max-w-xs" />
                     <FormError error={actionData?.fieldErrors?.confirmPassword} />
                 </div>

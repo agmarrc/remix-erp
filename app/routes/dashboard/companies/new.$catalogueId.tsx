@@ -75,7 +75,8 @@ export default function NewCompany() {
         <div>
             <BackButton uri={`/dashboard/catalogues/show/${params.catalogueId}`} />
             <Form method="post">
-                <div className="my-6">
+                <div className="form-control my-6">
+                    <label>Nombre de la empresa</label>
                     <input type="text" name="name" placeholder="Nombre de la empresa" className="input input-bordered w-full max-w-xs" />
                     <FormError error={actionData?.fieldErrors?.name} />
                 </div>

@@ -99,11 +99,13 @@ export default function NewCompany() {
         <div>
             <BackButton uri={`/dashboard/locations/show/${params.locationId}`} />
             <Form method="post">
-                <div className="my-6">
+                <div className="form-control my-6">
+                    <label>Nombre del módulo</label>
                     <input type="text" name="name" placeholder="Nombre del módulo" className="input input-bordered w-full max-w-xs" />
                     <FormError error={actionData?.fieldErrors?.name} />
                 </div>
-                <div className="my-6">
+                <div className="form-control my-6">
+                    <label>Número de trabajadores</label>
                     <input type="number" name="workers" placeholder="Número de trabajadores" className="input input-bordered w-full max-w-xs" />
                     <FormError error={actionData?.fieldErrors?.workers} />
                 </div>

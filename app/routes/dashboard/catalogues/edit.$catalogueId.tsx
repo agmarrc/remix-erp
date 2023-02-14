@@ -83,7 +83,8 @@ export default function EditCatalogue() {
             <BackButton uri={`/dashboard/catalogues/show/${catalogue.id}`} />
             <h3 className="text-xl">Editar</h3>
             <Form method="post">
-                <div className="my-6">
+                <div className="form-control my-6">
+                    <label>Nombre del catálogo</label>
                     <input type="text" name="name" defaultValue={catalogue.name} placeholder="Nombre del catálogo" className="input input-bordered w-full max-w-xs" />
                     <FormError error={actionData?.fieldErrors?.name} />
                 </div>

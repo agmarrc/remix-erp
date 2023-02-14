@@ -68,6 +68,7 @@ export default function ShowLocation() {
                             </svg>
                             {location.name}
                         </h2>
+                        <p><strong>{location.placeName}</strong></p>
                         <div className="card-actions justify-end">
                             {
                                 canEdit &&

@@ -65,7 +65,8 @@ export default function NewCatalogue() {
         <div>
             <BackButton uri="/dashboard" />
             <Form method="post">
-                <div className="my-6">
+                <div className="form-control my-6">
+                    <label>Nombre del catálogo</label>
                     <input type="text" name="name" placeholder="Nombre del catálogo" className="input input-bordered w-full max-w-xs" />
                     <FormError error={actionData?.fieldErrors?.name} />
                 </div>

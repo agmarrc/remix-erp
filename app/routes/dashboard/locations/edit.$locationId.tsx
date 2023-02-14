@@ -129,11 +129,13 @@ export default function EditLocation() {
             <BackButton uri={`/dashboard/locations/show/${location.id}`} />
             <h3 className="text-xl">Editar</h3>
             <Form onSubmit={onSubmit} method="post">
-                <div className="my-6">
+                <div className="form-control my-6">
+                    <label>Nombre de la sede</label>
                     <input type="text" name="name" placeholder="Nombre de la sede" defaultValue={location.name} className="input input-bordered w-full max-w-xs" />
                     <FormError error={actionData?.fieldErrors?.name} />
                 </div>
-                <div className="my-6">
+                <div className="form-control my-6">
+                    <label>Nombre de la ubicación</label>
                     <input type="text" name="placeName" placeholder="Nombre de la ubicación" defaultValue={location.placeName} className="input input-bordered w-full max-w-xs" />
                     <FormError error={actionData?.fieldErrors?.placeName} />
                 </div>

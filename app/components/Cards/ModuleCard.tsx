@@ -15,6 +15,7 @@ export default function ModuleCard({ module }: Props) {
                     </svg>
                     {module.name}
                 </h2>
+                <p><strong>{module.workers} trabajadores</strong></p>
                 <div className="card-actions justify-end">
                     <Link to={`/dashboard/modules/show/${module.id}`} className="btn btn-primary">Ver</Link>
                 </div>

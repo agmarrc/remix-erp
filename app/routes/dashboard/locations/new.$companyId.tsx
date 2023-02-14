@@ -137,11 +137,13 @@ export default function NewCompany() {
         <div>
             <BackButton uri={`/dashboard/companies/show/${params.companyId}`} />
             <Form onSubmit={onSubmit} method="post">
-                <div className="my-6">
+                <div className="form-control my-6">
+                    <label>Nombre de la sede</label>
                     <input type="text" name="name" placeholder="Nombre de la sede" className="input input-bordered w-full max-w-xs" />
                     <FormError error={actionData?.fieldErrors?.name} />
                 </div>
-                <div className="my-6">
+                <div className="form-control my-6">
+                    <label>Nombre de la ubicación</label>
                     <input type="text" name="placeName" placeholder="Nombre de la ubicación" className="input input-bordered w-full max-w-xs" />
                     <FormError error={actionData?.fieldErrors?.placeName} />
                 </div>
