@@ -1,4 +1,6 @@
 import { Link } from "@remix-run/react";
+import Alert from "~/components/Alert";
+import { ERROR_UNEXPECTED } from "~/data/constants";
 
 export default function Index() {
   return (
@@ -16,4 +18,10 @@ export default function Index() {
       </div>
     </div>
   );
+}
+
+export function ErrorBoundary() {
+  return (
+      <Alert type="alert-error">{ERROR_UNEXPECTED}</Alert>
+  )
 }

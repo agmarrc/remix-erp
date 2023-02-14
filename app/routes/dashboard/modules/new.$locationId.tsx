@@ -1,11 +1,14 @@
-import type { ActionArgs} from "@remix-run/node";
-import { json, redirect } from "@remix-run/node";
-import { Form, Link, useActionData, useLoaderData, useParams } from "@remix-run/react";
+import type { ActionArgs, LoaderArgs } from "@remix-run/node";
+import { redirect } from "@remix-run/node";
+import { Form, useActionData, useCatch, useParams } from "@remix-run/react";
 import Alert from "~/components/Alert";
 import BackButton from "~/components/BackButton";
 import FormError from "~/components/FormError";
+import { ERROR_PERMISSION_CREATE, ERROR_RESOURCE_NOT_FOUND, ERROR_UNEXPECTED } from "~/data/constants";
 import { db } from "~/utils/db.server";
+import { hasPermission } from "~/utils/permission.server";
 import { badRequest } from "~/utils/request.server";
+import { requireUserId } from "~/utils/session.server";
 
 function validateName(name: unknown) {
     if (name === "") {
@@ -31,11 +34,22 @@ function validateWorkers(workers: unknown) {
     }
 }
 
+export const loader = async ({ request }: LoaderArgs) => {
+    const userId = await requireUserId(request);
+    const canCreate = await hasPermission({ resource: 'module', query: { userId: userId, create: true } });
+    if (!canCreate) throw new Response(ERROR_PERMISSION_CREATE, { status: 403 });
+    return null;
+}
+
 export const action = async ({ params, request }: ActionArgs) => {
     const form = await request.formData();
     const name = form.get("name");
     const locationId = params.locationId;
     const workers = form.get("workers");
+
+    const userId = await requireUserId(request);
+    const canCreate = await hasPermission({ resource: 'module', query: { userId: userId, create: true } });
+    if (!canCreate) throw new Response(ERROR_PERMISSION_CREATE, { status: 403 });
 
     if (
         typeof name !== "string" ||
@@ -53,11 +67,7 @@ export const action = async ({ params, request }: ActionArgs) => {
         where: { id: locationId }
     });
 
-    if (!location) {
-        throw new Response('No se encontró la sede', {
-            status: 404
-        })
-    }
+    if (!location) throw new Response(ERROR_RESOURCE_NOT_FOUND, { status: 404 })
 
     const catalogueId = location.catalogueId;
     const fields = { name, locationId, catalogueId, workers };
@@ -103,5 +113,29 @@ export default function NewCompany() {
                 <FormError error={actionData?.formError} />
             </Form>
         </div>
+    );
+}
+
+export function CatchBoundary() {
+    const caught = useCatch();
+
+    switch (caught.status) {
+        case 403: {
+            return <Alert type="alert-error">{caught.data}</Alert>
+
+        }
+        case 404: {
+            return <Alert type="alert-error">{caught.data}</Alert>
+
+        }
+        default: {
+            throw new Error(`Unhandled error: ${caught.status}`);
+        }
+    }
+}
+
+export function ErrorBoundary() {
+    return (
+        <Alert type="alert-error">{ERROR_UNEXPECTED}</Alert>
     );
 }

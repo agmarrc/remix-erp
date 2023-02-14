@@ -1,10 +1,11 @@
 import type { ActionArgs, LoaderArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
 import { Form, useActionData, useCatch, useLoaderData } from "@remix-run/react";
-import { redirect, useParams } from "react-router";
+import { redirect } from "react-router";
 import Alert from "~/components/Alert";
 import BackButton from "~/components/BackButton";
 import FormError from "~/components/FormError";
+import { ERROR_PERMISSION_EDIT, ERROR_RESOURCE_NOT_FOUND, ERROR_UNEXPECTED } from "~/data/constants";
 import { db } from "~/utils/db.server";
 import { hasPermission } from "~/utils/permission.server";
 import { badRequest } from "~/utils/request.server";
@@ -21,18 +22,12 @@ export const loader = async ({ params, request }: LoaderArgs) => {
 
     const canEdit = await hasPermission({ resource: 'catalogue', query: { catalogueId: params.catalogueId, userId: userId, edit: true } })
 
-    if (!canEdit) throw new Response('No tienes permisos para edit este recurso', {
-        status: 403
-    });
+    if (!canEdit) throw new Response(ERROR_PERMISSION_EDIT, { status: 403 });
 
     const catalogue = await db.catalogue.findUnique({
         where: { id: params.catalogueId }
     });
-    if (!catalogue) {
-        throw new Response("No se encontró el recurso", {
-            status: 404
-        });
-    }
+    if (!catalogue) throw new Response(ERROR_RESOURCE_NOT_FOUND, { status: 404 });
 
     return json({ catalogue });
 }
@@ -45,9 +40,7 @@ export const action = async ({ params, request }: ActionArgs) => {
 
     const canEdit = await hasPermission({ resource: 'catalogue', query: { catalogueId: params.catalogueId, userId: userId, edit: true } })
 
-    if (!canEdit) throw new Response('No tienes permisos para edit este recurso', {
-        status: 403
-    });
+    if (!canEdit) throw new Response(ERROR_PERMISSION_EDIT, { status: 403 });
 
     if (typeof name !== "string") {
         return badRequest({
@@ -107,14 +100,14 @@ export function CatchBoundary() {
 
     switch (caught.status) {
         case 400: {
-            return <Alert type="alert-error">Acción no permitida</Alert>
+            return <Alert type="alert-error">{caught.data}</Alert>
+        }
+        case 403: {
+            return <Alert type="alert-error">{caught.data}</Alert>
         }
         case 404: {
             return <Alert type="alert-error">{caught.data}</Alert>
 
-        }
-        case 403: {
-            return <Alert type="alert-error">{caught.data}</Alert>
         }
         default: {
             throw new Error(`Unhandled error: ${caught.status}`);
@@ -123,8 +116,7 @@ export function CatchBoundary() {
 }
 
 export function ErrorBoundary() {
-    const { catalogueId } = useParams();
     return (
-        <Alert type="alert-error">Ocurrió un error cargando la información del catálogo con id {catalogueId}</Alert>
+        <Alert type="alert-error">{ERROR_UNEXPECTED}</Alert>
     );
 }

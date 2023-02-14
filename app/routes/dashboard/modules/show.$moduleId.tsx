@@ -1,44 +1,52 @@
 import type { ActionArgs, LoaderArgs } from "@remix-run/node";
 import { redirect } from "@remix-run/node";
 import { json } from "@remix-run/node";
-import { Form, Link, useCatch, useLoaderData, useParams } from "@remix-run/react";
+import { Form, Link, useCatch, useLoaderData } from "@remix-run/react";
 import Alert from "~/components/Alert";
 import BackButton from "~/components/BackButton";
 import CardContainer from "~/components/Cards/CardContainer";
+import { ERROR_PERMISSION_DESTROY, ERROR_RESOURCE_NOT_FOUND, ERROR_UNEXPECTED } from "~/data/constants";
 import { db } from "~/utils/db.server";
+import { hasPermission } from "~/utils/permission.server";
+import { requireUserId } from "~/utils/session.server";
 
-export const loader = async ({ params }: LoaderArgs) => {
+export const loader = async ({ params, request }: LoaderArgs) => {
+    const userId = await requireUserId(request);
+
+    const canEdit = await hasPermission({ resource: 'module', query: { userId: userId, moduleId: params.moduleId, edit: true } });
+    const canDestroy = await hasPermission({ resource: 'module', query: { userId: userId, moduleId: params.moduleId, destroy: true } });
+
     const module = await db.module.findUnique({
         where: { id: params.moduleId },
     });
 
-    if (!module) {
-        throw new Response('No se encontró el módulo', {
-            status: 404
-        });
-    }
+    if (!module) throw new Response(ERROR_RESOURCE_NOT_FOUND, { status: 404 });
 
-    return json({ module });
+    return json({ module, canEdit, canDestroy });
 }
 
 export const action = async ({ params, request }: ActionArgs) => {
     const form = await request.formData();
     if (form.get('intent') !== 'delete') return null;
 
+    const userId = await requireUserId(request);
+
+    const canDestroy = await hasPermission({ resource: 'module', query: { userId: userId, moduleId: params.moduleId, destroy: true } });
+
+    if (!canDestroy) throw new Response(ERROR_PERMISSION_DESTROY, { status: 403 })
+
     const module = await db.module.findUnique({
         where: { id: params.moduleId }
     });
 
-    if (!module) throw new Response("Este recurso no existe", {
-        status: 404
-    });
+    if (!module) throw new Response(ERROR_RESOURCE_NOT_FOUND, { status: 404 });
 
     await db.module.delete({ where: { id: params.moduleId } });
     return redirect(`/dashboard/locations/show/${module.locationId}`);
 }
 
 export default function ShowModule() {
-    const { module } = useLoaderData<typeof loader>();
+    const { module, canDestroy, canEdit } = useLoaderData<typeof loader>();
 
     return (
         <>
@@ -53,10 +61,16 @@ export default function ShowModule() {
                             {module.name}
                         </h2>
                         <div className="card-actions justify-end">
-                            <Link to={`/dashboard/modules/edit/${module.id}`} className="btn btn-primary">Editar</Link>
-                            <Form method="post">
-                                <button className="btn btn-secondary" name="intent" value="delete">Eliminar</button>
-                            </Form>
+                            {
+                                canEdit &&
+                                <Link to={`/dashboard/modules/edit/${module.id}`} className="btn btn-primary">Editar</Link>
+                            }
+                            {
+                                canDestroy &&
+                                <Form method="post">
+                                    <button className="btn btn-secondary" name="intent" value="delete">Eliminar</button>
+                                </Form>
+                            }
                         </div>
                     </div>
                 </div>
@@ -69,6 +83,9 @@ export function CatchBoundary() {
     const caught = useCatch();
 
     switch (caught.status) {
+        case 403: {
+            return <Alert type="alert-error">{caught.data}</Alert>
+        }
         case 404: {
             return <Alert type="alert-error">{caught.data}</Alert>
         }
@@ -79,9 +96,7 @@ export function CatchBoundary() {
 }
 
 export function ErrorBoundary() {
-    const { locationId } = useParams();
-
     return (
-        <Alert type="alert-error">Ocurrió un error procesando la sede con id {locationId}</Alert>
+        <Alert type="alert-error">{ERROR_UNEXPECTED}</Alert>
     )
 }

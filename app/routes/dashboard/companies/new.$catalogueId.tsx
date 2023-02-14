@@ -1,8 +1,10 @@
-import type { ActionArgs, LoaderArgs} from "@remix-run/node";
-import { redirect} from "@remix-run/node";
-import { Form, useActionData, useParams } from "@remix-run/react";
+import type { ActionArgs, LoaderArgs } from "@remix-run/node";
+import { redirect } from "@remix-run/node";
+import { Form, useActionData, useCatch, useParams } from "@remix-run/react";
+import Alert from "~/components/Alert";
 import BackButton from "~/components/BackButton";
 import FormError from "~/components/FormError";
+import { ERROR_PERMISSION_CREATE, ERROR_UNEXPECTED } from "~/data/constants";
 import { db } from "~/utils/db.server";
 import { hasPermission } from "~/utils/permission.server";
 import { badRequest } from "~/utils/request.server";
@@ -20,14 +22,12 @@ function validateCatalogueId(catalogueId: unknown) {
     }
 }
 
-export const loader = async ({params, request}: LoaderArgs) => {
+export const loader = async ({ params, request }: LoaderArgs) => {
     const userId = await requireUserId(request);
 
-    const canCreate = await hasPermission({resource: 'company', query: {userId: userId, create: true}});
+    const canCreate = await hasPermission({ resource: 'company', query: { userId: userId, create: true } });
 
-    if (!canCreate) throw new Response("No tienes permisos para crear este recurso", {
-        status: 403
-    });
+    if (!canCreate) throw new Response(ERROR_PERMISSION_CREATE, { status: 403 });
 
     return null;
 }
@@ -86,4 +86,23 @@ export default function NewCompany() {
             </Form>
         </div>
     );
+}
+
+export function CatchBoundary() {
+    const caught = useCatch();
+
+    switch (caught.status) {
+        case 403: {
+            return <Alert type="alert-error">{caught.data}</Alert>
+        }
+        default: {
+            throw new Error(`Unhandled error: ${caught.status}`);
+        }
+    }
+}
+
+export function ErrorBoundary() {
+    return (
+        <Alert type="alert-error">{ERROR_UNEXPECTED}</Alert>
+    )
 }

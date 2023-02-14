@@ -1,12 +1,18 @@
-import { json, LoaderArgs } from "@remix-run/node";
+import type { LoaderArgs } from "@remix-run/node";
+import { json } from "@remix-run/node";
 import { Link, useLoaderData } from "@remix-run/react";
+import Alert from "~/components/Alert";
 import CardContainer from "~/components/Cards/CardContainer";
 import CatalogueCard from "~/components/Cards/CatalogueCard";
+import { ERROR_UNEXPECTED } from "~/data/constants";
 import { db } from "~/utils/db.server";
+import { hasPermission } from "~/utils/permission.server";
 import { requireUserId } from "~/utils/session.server";
 
 export const loader = async ({ request }: LoaderArgs) => {
     const userId = await requireUserId(request);
+
+    const canCreate = await hasPermission({ resource: 'catalogue', query: { userId: userId, create: true } });
 
     const catalogues = await db.catalogue.findMany({
         include: {
@@ -15,11 +21,6 @@ export const loader = async ({ request }: LoaderArgs) => {
             }
         }
     });
-    const createPermission = await db.cataloguePermission.findFirst({
-        where: { userId: userId, create: true }
-    });
-
-    const canCreate = createPermission ? true : false;
 
     return json({ catalogues, canCreate });
 };
@@ -44,4 +45,10 @@ export default function DashboardIndex() {
         }
 
     </div>
+}
+
+export function ErrorBoundary() {
+    return (
+        <Alert type="alert-error">{ERROR_UNEXPECTED}</Alert>
+    )
 }

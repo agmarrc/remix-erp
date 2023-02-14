@@ -1,7 +1,7 @@
 import type { ActionArgs, LoaderArgs } from "@remix-run/node";
 import { redirect } from "@remix-run/node";
 import { json } from "@remix-run/node";
-import { useActionData, useLoaderData } from "@remix-run/react";
+import { useActionData, useCatch, useLoaderData } from "@remix-run/react";
 import BackButton from "~/components/BackButton";
 import { db } from "~/utils/db.server";
 import { badRequest } from "~/utils/request.server";
@@ -9,8 +9,15 @@ import CataloguePermissions from "~/components/Permissions/CataloguePermissions"
 import CompanyPermissions from "~/components/Permissions/CompanyPermissions";
 import LocationPermissions from "~/components/Permissions/LocationPermissions";
 import ModulePermissions from "~/components/Permissions/ModulePermissions";
+import { getUser } from "~/utils/session.server";
+import { ERROR_RESOURCE_NOT_FOUND, ERROR_UNEXPECTED } from "~/data/constants";
+import Alert from "~/components/Alert";
 
-export const loader = async ({ params }: LoaderArgs) => {
+export const loader = async ({ params, request }: LoaderArgs) => {
+    const userAccess = await getUser(request);
+
+    if (userAccess?.role.privileges !== 1) return redirect('/dashboard');
+
     const user = await db.user.findUnique({
         where: { id: params.userId },
         select: {
@@ -41,9 +48,7 @@ export const loader = async ({ params }: LoaderArgs) => {
         }
     });
 
-    if (!user) throw new Response("No se encontró el usuario", {
-        status: 404
-    });
+    if (!user) throw new Response(ERROR_RESOURCE_NOT_FOUND, { status: 404 });
 
     const catalogues = await db.catalogue.findMany();
     const companies = await db.company.findMany();
@@ -131,7 +136,7 @@ export const action = async ({ params, request }: ActionArgs) => {
             return redirect(`/dashboard/users/show/${params.userId}`);
         }
         default: {
-            throw new Response("Sin candidatos");
+            throw new Response(ERROR_RESOURCE_NOT_FOUND, { status: 404 });
         }
     }
 }
@@ -184,4 +189,26 @@ export default function ShowUser() {
             </div>
         </>
     );
+}
+
+export function CatchBoundary() {
+    const caught = useCatch();
+
+    switch (caught.status) {
+        case 403: {
+            return <Alert type="alert-error">{caught.data}</Alert>
+        }
+        case 404: {
+            return <Alert type="alert-error">{caught.data}</Alert>
+        }
+        default: {
+            throw new Error(`Unhandled error: ${caught.status}`);
+        }
+    }
+}
+
+export function ErrorBoundary() {
+    return (
+        <Alert type="alert-error">{ERROR_UNEXPECTED}</Alert>
+    )
 }

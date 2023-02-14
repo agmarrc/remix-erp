@@ -1,22 +1,21 @@
 import type { ActionArgs, LoaderArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
-import { Form, Link, useCatch, useLoaderData, useParams } from "@remix-run/react";
+import { Form, Link, useCatch, useLoaderData } from "@remix-run/react";
 import Alert from "~/components/Alert";
 import BackButton from "~/components/BackButton";
 import CardContainer from "~/components/Cards/CardContainer";
 import LocationCard from "~/components/Cards/LocationCard";
+import { ERROR_PERMISSION_DESTROY, ERROR_RESOURCE_NOT_FOUND, ERROR_UNEXPECTED } from "~/data/constants";
 import { db } from "~/utils/db.server";
 import { hasPermission } from "~/utils/permission.server";
 import { requireUserId } from "~/utils/session.server";
 
 export const loader = async ({ params, request }: LoaderArgs) => {
-
-    if (!params.companyId) throw new Response("No se encontró el recurso");
-
     const userId = await requireUserId(request);
 
-    const canEdit = await hasPermission({ resource: 'company', query: {companyId: params.companyId, userId: userId, edit: true} });
-    const canDestroy = await hasPermission({ resource: 'company', query: {companyId: params.companyId, userId: userId, destroy: true} });
+    const canCreate = await hasPermission({ resource: 'location', query: { userId: userId, create: true } });
+    const canEdit = await hasPermission({ resource: 'company', query: { companyId: params.companyId, userId: userId, edit: true } });
+    const canDestroy = await hasPermission({ resource: 'company', query: { companyId: params.companyId, userId: userId, destroy: true } });
 
     const company = await db.company.findUnique({
         where: { id: params.companyId },
@@ -32,42 +31,32 @@ export const loader = async ({ params, request }: LoaderArgs) => {
             }
         }
     });
-    if (!company) {
-        throw new Response("Company not found", {
-            status: 404
-        });
-    }
-    return json({ company, canDestroy, canEdit });
+    if (!company) throw new Response(ERROR_RESOURCE_NOT_FOUND, {status: 404});
+
+    return json({ company, canDestroy, canEdit, canCreate });
 }
 
 export const action = async ({ params, request }: ActionArgs) => {
-    if (!params.companyId) throw new Response("No se encontró el recurso");
-
     const form = await request.formData();
     if (form.get('intent') !== 'delete') return null;
 
     const userId = await requireUserId(request);
 
-    const canDestroy = await hasPermission({ resource: 'company', query: {companyId: params.companyId, userId: userId, destroy: true} });
+    const canDestroy = await hasPermission({ resource: 'company', query: { companyId: params.companyId, userId: userId, destroy: true } });
 
-    if (!canDestroy) throw new Response("No tienes permisos para eliminar este recurso", {
-        status: 403
-    });
+    if (!canDestroy) throw new Response(ERROR_PERMISSION_DESTROY, {status: 403 });
 
     const company = await db.company.findUnique({
         where: { id: params.companyId },
     });
-    if (!company) {
-        throw new Response("Este recurso no existe", {
-            status: 404,
-        });
-    }
+    if (!company) throw new Response(ERROR_RESOURCE_NOT_FOUND, {status: 404});
+
     await db.company.delete({ where: { id: params.companyId } });
     return redirect(`/dashboard/catalogues/show/${company.catalogueId}`);
 }
 
 export default function Company() {
-    const { company, canDestroy, canEdit } = useLoaderData<typeof loader>();
+    const { company, canDestroy, canEdit, canCreate } = useLoaderData<typeof loader>();
     const locations = company.locations;
 
     return (
@@ -100,7 +89,10 @@ export default function Company() {
 
             <div className="flex gap-5 justify-between">
                 <h3 className="text-xl">Sedes en esta empresa</h3>
-                <Link to={`/dashboard/locations/new/${company.id}`} className="btn btn-primary">Nueva sede</Link>
+                {
+                    canCreate &&
+                    <Link to={`/dashboard/locations/new/${company.id}`} className="btn btn-primary">Nueva sede</Link>
+                }
             </div>
 
             {locations.length === 0
@@ -120,12 +112,12 @@ export function CatchBoundary() {
         case 400: {
             return <Alert type="alert-error">{caught.data}</Alert>
         }
+        case 403: {
+            return <Alert type="alert-error">{caught.data}</Alert>
+        }
         case 404: {
             return <Alert type="alert-error">{caught.data}</Alert>
 
-        }
-        case 403: {
-            return <Alert type="alert-error">{caught.data}</Alert>
         }
         default: {
             throw new Error(`Unhandled error: ${caught.status}`);
@@ -134,8 +126,7 @@ export function CatchBoundary() {
 }
 
 export function ErrorBoundary() {
-    const { companyId } = useParams();
     return (
-        <Alert type="alert-error">Occurió un error procesando la empresa con id {companyId}</Alert>
+        <Alert type="alert-error">{ERROR_UNEXPECTED}</Alert>
     );
 }

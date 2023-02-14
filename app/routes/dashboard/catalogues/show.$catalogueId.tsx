@@ -1,10 +1,11 @@
 import type { ActionArgs, LoaderArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
-import { Form, Link, useCatch, useLoaderData, useParams } from "@remix-run/react";
+import { Form, Link, useCatch, useLoaderData } from "@remix-run/react";
 import Alert from "~/components/Alert";
 import BackButton from "~/components/BackButton";
 import CardContainer from "~/components/Cards/CardContainer";
 import CompanyCard from "~/components/Cards/CompanyCard";
+import { ERROR_PERMISSION_DESTROY, ERROR_RESOURCE_NOT_FOUND, ERROR_UNEXPECTED } from "~/data/constants";
 import { db } from "~/utils/db.server";
 import { hasPermission } from "~/utils/permission.server";
 import { requireUserId } from "~/utils/session.server";
@@ -12,6 +13,7 @@ import { requireUserId } from "~/utils/session.server";
 export const loader = async ({ params, request }: LoaderArgs) => {
     const userId = await requireUserId(request);
 
+    const canCreate = await hasPermission({ resource: 'company', query: { userId: userId, create: true } });
     const canEdit = await hasPermission({ resource: 'catalogue', query: { catalogueId: params.catalogueId, userId: userId, edit: true } });
     const canDestroy = await hasPermission({ resource: 'catalogue', query: { catalogueId: params.catalogueId, userId: userId, destroy: true } });
 
@@ -27,12 +29,9 @@ export const loader = async ({ params, request }: LoaderArgs) => {
             }, locations: true, modules: true
         }
     });
-    if (!catalogue) {
-        throw new Response("Recurso no encontrado", {
-            status: 404
-        });
-    }
-    return json({ catalogue, canDestroy, canEdit });
+    if (!catalogue) throw new Response(ERROR_RESOURCE_NOT_FOUND, { status: 404 });
+
+    return json({ catalogue, canDestroy, canEdit, canCreate });
 }
 
 export const action = async ({ params, request }: ActionArgs) => {
@@ -43,24 +42,19 @@ export const action = async ({ params, request }: ActionArgs) => {
 
     const canDestroy = await hasPermission({ resource: 'catalogue', query: { catalogueId: params.catalogueId, userId: userId, destroy: true } });
 
-    if (!canDestroy) throw new Response("No tienes permisos para eliminar este recurso", {
-        status: 403
-    });
+    if (!canDestroy) throw new Response(ERROR_PERMISSION_DESTROY, { status: 403 });
 
     const catalogue = await db.catalogue.findUnique({
         where: { id: params.catalogueId },
     });
-    if (!catalogue) {
-        throw new Response("Este recurso no existe", {
-            status: 404,
-        });
-    }
+    if (!catalogue) throw new Response(ERROR_RESOURCE_NOT_FOUND, { status: 404, });
+
     await db.catalogue.delete({ where: { id: params.catalogueId } });
     return redirect("/dashboard");
 }
 
 export default function Catalogue() {
-    const { catalogue, canDestroy, canEdit } = useLoaderData<typeof loader>();
+    const { catalogue, canDestroy, canEdit, canCreate } = useLoaderData<typeof loader>();
     const companies = catalogue.companies;
 
     return (
@@ -93,7 +87,10 @@ export default function Catalogue() {
 
             <div className="flex gap-5 justify-between">
                 <h3 className="text-xl">Empresas en este catálogo</h3>
-                <Link to={`/dashboard/companies/new/${catalogue.id}`} className="btn btn-primary">Nueva empresa</Link>
+                {
+                    canCreate &&
+                    <Link to={`/dashboard/companies/new/${catalogue.id}`} className="btn btn-primary">Nueva empresa</Link>
+                }
             </div>
 
             {companies.length === 0
@@ -113,12 +110,12 @@ export function CatchBoundary() {
         case 400: {
             return <Alert type="alert-error">{caught.data}</Alert>
         }
+        case 403: {
+            return <Alert type="alert-error">{caught.data}</Alert>
+        }
         case 404: {
             return <Alert type="alert-error">{caught.data}</Alert>
 
-        }
-        case 403: {
-            return <Alert type="alert-error">{caught.data}</Alert>
         }
         default: {
             throw new Error(`Unhandled error: ${caught.status}`);
@@ -127,8 +124,7 @@ export function CatchBoundary() {
 }
 
 export function ErrorBoundary() {
-    const { catalogueId } = useParams();
     return (
-        <div className="error-container">{`Ocurrió un error cargando la información de el catálogo con id ${catalogueId}.`}</div>
+        <div className="error-container">{ERROR_UNEXPECTED}</div>
     );
 }

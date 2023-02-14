@@ -1,11 +1,11 @@
-import type { ActionArgs } from "@remix-run/node";
+import type { ActionArgs, LoaderArgs } from "@remix-run/node";
 import { Form, useActionData } from "@remix-run/react";
 import { redirect } from "react-router";
 import BackButton from "~/components/BackButton";
 import FormError from "~/components/FormError";
 import { db } from "~/utils/db.server";
 import { badRequest } from "~/utils/request.server";
-import { register } from "~/utils/session.server";
+import { getUser, register } from "~/utils/session.server";
 
 function validateName(name: unknown) {
     if (typeof name !== "string" || name === "") {
@@ -32,6 +32,14 @@ function validateConfirmPassword(password: string, confirmPassword: unknown) {
     if (password !== confirmPassword) {
         return "Las contraseñas no coinciden"
     }
+}
+
+export const loader = async ({request}: LoaderArgs) => {
+    const user = await getUser(request);
+
+    if (user?.role.privileges !== 1) return redirect('/dashboard');
+
+    return null;
 }
 
 export const action = async ({ request }: ActionArgs) => {

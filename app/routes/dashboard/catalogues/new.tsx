@@ -4,6 +4,7 @@ import { Form, useActionData, useCatch } from "@remix-run/react";
 import Alert from "~/components/Alert";
 import BackButton from "~/components/BackButton";
 import FormError from "~/components/FormError";
+import { ERROR_PERMISSION_CREATE, ERROR_UNEXPECTED } from "~/data/constants";
 import { db } from "~/utils/db.server";
 import { hasPermission } from "~/utils/permission.server";
 import { badRequest } from "~/utils/request.server";
@@ -20,9 +21,7 @@ export const loader = async ({ request }: LoaderArgs) => {
 
     const canCreate = await hasPermission({ resource: 'catalogue', query: { userId: userId, create: true } })
 
-    if (!canCreate) throw new Response("No tienes permisos para crear este recurso", {
-        status: 403
-    });
+    if (!canCreate) throw new Response(ERROR_PERMISSION_CREATE, {status: 403});
 
     return null;
 }
@@ -94,6 +93,6 @@ export function CatchBoundary() {
 
 export function ErrorBoundary() {
     return (
-        <div className="error-container">Ocurrió un error cargando la información</div>
+        <div className="error-container">{ERROR_UNEXPECTED}</div>
     );
 }

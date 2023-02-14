@@ -7,6 +7,11 @@ interface Props {
 }
 
 export default function Navbar({ isAdmin, name }: Props) {
+    const logout = () => {
+        const btn = document.getElementById('logout-button');
+        if (btn) btn.click()
+    }
+
     return (
         <div className="navbar bg-base-100">
             <div className="navbar-start">
@@ -24,9 +29,9 @@ export default function Navbar({ isAdmin, name }: Props) {
                                 <Link to="/dashboard/users">Usuarios</Link>
                             </li>
                         }
-                        <li>
+                        <li onClick={logout}>
                             <Form action="/auth/logout" method="post">
-                                <button type="submit">
+                                <button id="logout-button" type="submit" className="w-100">
                                     Cerrar sesión
                                 </button>
                             </Form>

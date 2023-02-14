@@ -1,7 +1,9 @@
 import type { LoaderArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
 import { Outlet, useLoaderData } from "@remix-run/react";
+import Alert from "~/components/Alert";
 import Navbar from "~/components/Navbar";
+import { ERROR_UNEXPECTED } from "~/data/constants";
 import { getUser, requireUserId } from "~/utils/session.server";
 
 export const loader = async ({ request }: LoaderArgs) => {
@@ -27,4 +29,10 @@ export default function Dashboard() {
             </div>
         </div>
     </>
+}
+
+export function ErrorBoundary() {
+    return (
+        <Alert type="alert-error">{ERROR_UNEXPECTED}</Alert>
+    )
 }

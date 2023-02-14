@@ -3,13 +3,16 @@ import { json } from "@remix-run/node";
 import { Form, useActionData, useCatch, useLoaderData, useSubmit } from "@remix-run/react";
 import type { Coordinate } from "ol/coordinate";
 import { useState } from "react";
-import { redirect, useParams } from "react-router";
+import { redirect } from "react-router";
 import Alert from "~/components/Alert";
 import BackButton from "~/components/BackButton";
 import FormError from "~/components/FormError";
 import PickerMap from "~/components/PickerMap";
+import { ERROR_PERMISSION_EDIT, ERROR_RESOURCE_NOT_FOUND, ERROR_UNEXPECTED } from "~/data/constants";
 import { db } from "~/utils/db.server";
+import { hasPermission } from "~/utils/permission.server";
 import { badRequest } from "~/utils/request.server";
+import { requireUserId } from "~/utils/session.server";
 
 function validateName(name: unknown) {
     if (name === "") {
@@ -23,16 +26,18 @@ function validatePlaceName(placeName: unknown) {
     }
 }
 
-export const loader = async ({ params }: LoaderArgs) => {
+export const loader = async ({ params, request }: LoaderArgs) => {
+    const userId = await requireUserId(request);
+
+    const canEdit = await hasPermission({ resource: 'location', query: { locationId: params.locationId, userId: userId, edit: true } });
+
+    if (!canEdit) throw new Response(ERROR_PERMISSION_EDIT, { status: 403 })
+
     const location = await db.location.findUnique({
         where: { id: params.locationId }
     });
 
-    if (!location) {
-        throw new Response("No se encontró el recurso", {
-            status: 404
-        });
-    }
+    if (!location) throw new Response(ERROR_RESOURCE_NOT_FOUND, { status: 404 });
 
     return json({ location });
 }
@@ -43,6 +48,12 @@ export const action = async ({ params, request }: ActionArgs) => {
     const placeName = form.get("placeName");
     const longitude = form.get("longitude");
     const latitude = form.get("latitude");
+
+    const userId = await requireUserId(request);
+
+    const canEdit = await hasPermission({ resource: 'location', query: { locationId: params.locationId, userId: userId, edit: true } });
+
+    if (!canEdit) throw new Response(ERROR_PERMISSION_EDIT, { status: 403 });
 
     if (
         typeof name !== "string" ||
@@ -144,6 +155,10 @@ export function CatchBoundary() {
     const caught = useCatch();
 
     switch (caught.status) {
+        case 403: {
+            return <Alert type="alert-error">{caught.data}</Alert>
+
+        }
         case 404: {
             return <Alert type="alert-error">{caught.data}</Alert>
 
@@ -155,8 +170,7 @@ export function CatchBoundary() {
 }
 
 export function ErrorBoundary() {
-    const { locationId } = useParams();
     return (
-        <Alert type="alert-error">Ocurrió un error cargando la información de la sede con id {locationId}</Alert>
+        <Alert type="alert-error">{ERROR_UNEXPECTED}</Alert>
     );
 }

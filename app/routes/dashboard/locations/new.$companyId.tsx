@@ -1,14 +1,17 @@
-import type { ActionArgs} from "@remix-run/node";
+import type { ActionArgs, LoaderArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
-import { Form, Link, useActionData, useLoaderData, useParams, useSubmit } from "@remix-run/react";
+import { Form, Link, useActionData, useCatch, useLoaderData, useParams, useSubmit } from "@remix-run/react";
 import type { Coordinate } from "ol/coordinate";
 import React, { useState } from "react";
 import Alert from "~/components/Alert";
 import BackButton from "~/components/BackButton";
 import FormError from "~/components/FormError";
 import PickerMap from "~/components/PickerMap";
+import { ERROR_PERMISSION_CREATE, ERROR_RESOURCE_NOT_FOUND, ERROR_UNEXPECTED } from "~/data/constants";
 import { db } from "~/utils/db.server";
+import { hasPermission } from "~/utils/permission.server";
 import { badRequest } from "~/utils/request.server";
+import { requireUserId } from "~/utils/session.server";
 
 function validateName(name: unknown) {
     if (name === "") {
@@ -28,7 +31,13 @@ function validatePlaceName(placeName: unknown) {
     }
 }
 
-export const loader = async () => {
+export const loader = async ({ request }: LoaderArgs) => {
+    const userId = await requireUserId(request);
+
+    const canCreate = await hasPermission({ resource: 'location', query: { userId: userId, create: true } });
+
+    if (!canCreate) throw new Response(ERROR_PERMISSION_CREATE, { status: 403 })
+
     const companies = await db.company.findMany();
     return json({ companies });
 }
@@ -59,11 +68,7 @@ export const action = async ({ params, request }: ActionArgs) => {
         where: { id: companyId }
     });
 
-    if (!company) {
-        throw new Response('No se encontró la empresa', {
-            status: 404
-        })
-    }
+    if (!company) throw new Response(ERROR_RESOURCE_NOT_FOUND, { status: 404 })
 
     const catalogueId = company.catalogueId;
     const fields = { name, companyId, catalogueId, placeName, latitude, longitude };
@@ -151,5 +156,29 @@ export default function NewCompany() {
                 <FormError error={actionData?.formError} />
             </Form>
         </div>
+    );
+}
+
+export function CatchBoundary() {
+    const caught = useCatch();
+
+    switch (caught.status) {
+        case 403: {
+            return <Alert type="alert-error">{caught.data}</Alert>
+
+        }
+        case 404: {
+            return <Alert type="alert-error">{caught.data}</Alert>
+
+        }
+        default: {
+            throw new Error(`Unhandled error: ${caught.status}`);
+        }
+    }
+}
+
+export function ErrorBoundary() {
+    return (
+        <Alert type="alert-error">{ERROR_UNEXPECTED}</Alert>
     );
 }

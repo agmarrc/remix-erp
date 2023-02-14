@@ -1,15 +1,24 @@
 import type { ActionArgs, LoaderArgs } from "@remix-run/node";
 import { redirect } from "@remix-run/node";
 import { json } from "@remix-run/node";
-import { Form, Link, useCatch, useLoaderData, useParams } from "@remix-run/react";
+import { Form, Link, useCatch, useLoaderData } from "@remix-run/react";
 import Alert from "~/components/Alert";
 import BackButton from "~/components/BackButton";
 import CardContainer from "~/components/Cards/CardContainer";
 import LocationMap from "~/components/LocationMap";
 import ModuleCard from "~/components/Cards/ModuleCard";
 import { db } from "~/utils/db.server";
+import { requireUserId } from "~/utils/session.server";
+import { hasPermission } from "~/utils/permission.server";
+import { ERROR_PERMISSION_DESTROY, ERROR_RESOURCE_NOT_FOUND, ERROR_UNEXPECTED } from "~/data/constants";
 
-export const loader = async ({ params }: LoaderArgs) => {
+export const loader = async ({ params, request }: LoaderArgs) => {
+    const userId = await requireUserId(request);
+
+    const canCreate = await hasPermission({ resource: 'module', query: { userId: userId, create: true } });
+    const canEdit = await hasPermission({ resource: 'location', query: { locationId: params.locationId, userId: userId, edit: true } })
+    const canDestroy = await hasPermission({ resource: 'location', query: { locationId: params.locationId, userId: userId, destroy: true } })
+
     const location = await db.location.findUnique({
         where: { id: params.locationId },
         include: {
@@ -17,33 +26,33 @@ export const loader = async ({ params }: LoaderArgs) => {
         }
     });
 
-    if (!location) {
-        throw new Response('No se encontró la sede', {
-            status: 404
-        });
-    }
+    if (!location) throw new Response(ERROR_RESOURCE_NOT_FOUND, { status: 404 });
 
-    return json({ location });
+    return json({ location, canEdit, canDestroy, canCreate });
 }
 
 export const action = async ({ params, request }: ActionArgs) => {
     const form = await request.formData();
     if (form.get('intent') !== 'delete') return null;
 
+    const userId = await requireUserId(request);
+
+    const canDestroy = await hasPermission({ resource: 'location', query: { locationId: params.locationId, userId: userId, destroy: true } })
+
+    if (!canDestroy) throw new Response(ERROR_PERMISSION_DESTROY, { status: 403 })
+
     const location = await db.location.findUnique({
         where: { id: params.locationId }
     });
 
-    if (!location) throw new Response("Este recurso no existe", {
-        status: 404
-    });
+    if (!location) throw new Response(ERROR_RESOURCE_NOT_FOUND, { status: 404 });
 
     await db.location.delete({ where: { id: params.locationId } });
     return redirect(`/dashboard/companies/show/${location.companyId}`);
 }
 
 export default function ShowLocation() {
-    const { location } = useLoaderData<typeof loader>();
+    const { location, canEdit, canDestroy, canCreate } = useLoaderData<typeof loader>();
     const modules = location.modules;
 
     return (
@@ -60,10 +69,16 @@ export default function ShowLocation() {
                             {location.name}
                         </h2>
                         <div className="card-actions justify-end">
-                            <Link to={`/dashboard/locations/edit/${location.id}`} className="btn btn-primary">Editar</Link>
-                            <Form method="post">
-                                <button className="btn btn-secondary" name="intent" value="delete">Eliminar</button>
-                            </Form>
+                            {
+                                canEdit &&
+                                <Link to={`/dashboard/locations/edit/${location.id}`} className="btn btn-primary">Editar</Link>
+                            }
+                            {
+                                canDestroy &&
+                                <Form method="post">
+                                    <button className="btn btn-secondary" name="intent" value="delete">Eliminar</button>
+                                </Form>
+                            }
                         </div>
                     </div>
                 </div>
@@ -78,7 +93,10 @@ export default function ShowLocation() {
 
             <div className="flex gap-5 justify-between">
                 <h3 className="text-xl">Módulos en esta sede</h3>
-                <Link to={`/dashboard/modules/new/${location.id}`} className="btn btn-primary">Nuevo módulo</Link>
+                {
+                    canCreate &&
+                    <Link to={`/dashboard/modules/new/${location.id}`} className="btn btn-primary">Nuevo módulo</Link>
+                }
             </div>
 
             {modules.length === 0
@@ -95,6 +113,9 @@ export function CatchBoundary() {
     const caught = useCatch();
 
     switch (caught.status) {
+        case 403: {
+            return <Alert type="alert-error">{caught.data}</Alert>
+        }
         case 404: {
             return <Alert type="alert-error">{caught.data}</Alert>
         }
@@ -105,9 +126,7 @@ export function CatchBoundary() {
 }
 
 export function ErrorBoundary() {
-    const { locationId } = useParams();
-
     return (
-        <Alert type="alert-error">Ocurrió un error procesando la sede con id {locationId}</Alert>
+        <Alert type="alert-error">{ERROR_UNEXPECTED}</Alert>
     )
 }

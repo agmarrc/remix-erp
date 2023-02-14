@@ -1,12 +1,15 @@
 import type { ActionArgs, LoaderArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
 import { Form, useActionData, useCatch, useLoaderData } from "@remix-run/react";
-import { redirect, useParams } from "react-router";
+import { redirect } from "react-router";
 import Alert from "~/components/Alert";
 import BackButton from "~/components/BackButton";
 import FormError from "~/components/FormError";
+import { ERROR_PERMISSION_EDIT, ERROR_RESOURCE_NOT_FOUND, ERROR_UNEXPECTED } from "~/data/constants";
 import { db } from "~/utils/db.server";
+import { hasPermission } from "~/utils/permission.server";
 import { badRequest } from "~/utils/request.server";
+import { requireUserId } from "~/utils/session.server";
 
 function validateName(name: unknown) {
     if (name === "") {
@@ -26,16 +29,18 @@ function validateWorkers(workers: unknown) {
     }
 }
 
-export const loader = async ({ params }: LoaderArgs) => {
+export const loader = async ({ params, request }: LoaderArgs) => {
+    const userId = await requireUserId(request);
+
+    const canEdit = await hasPermission({ resource: 'module', query: { moduleId: params.moduleId, userId: userId, edit: true } })
+
+    if (!canEdit) throw new Response(ERROR_PERMISSION_EDIT, { status: 403 });
+
     const module = await db.module.findUnique({
         where: { id: params.moduleId }
     });
 
-    if (!module) {
-        throw new Response("No se encontró el recurso", {
-            status: 404
-        });
-    }
+    if (!module) throw new Response(ERROR_RESOURCE_NOT_FOUND, { status: 404 });
 
     return json({ module });
 }
@@ -44,6 +49,12 @@ export const action = async ({ params, request }: ActionArgs) => {
     const form = await request.formData();
     const name = form.get("name");
     const workers = form.get("workers");
+
+    const userId = await requireUserId(request);
+
+    const canEdit = await hasPermission({ resource: 'module', query: { moduleId: params.moduleId, userId: userId, edit: true } })
+
+    if (!canEdit) throw new Response(ERROR_PERMISSION_EDIT, { status: 403 });
 
     if (
         typeof name !== "string" ||
@@ -110,6 +121,10 @@ export function CatchBoundary() {
     const caught = useCatch();
 
     switch (caught.status) {
+        case 403: {
+            return <Alert type="alert-error">{caught.data}</Alert>
+
+        }
         case 404: {
             return <Alert type="alert-error">{caught.data}</Alert>
 
@@ -121,8 +136,7 @@ export function CatchBoundary() {
 }
 
 export function ErrorBoundary() {
-    const { moduleId } = useParams();
     return (
-        <Alert type="alert-error">Ocurrió un error cargando la información del módulo con id {moduleId}</Alert>
+        <Alert type="alert-error">{ERROR_UNEXPECTED}</Alert>
     );
 }
