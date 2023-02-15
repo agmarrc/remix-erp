@@ -1,6 +1,6 @@
 import type { ActionArgs, LoaderArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
-import { Form, Link, useCatch, useLoaderData } from "@remix-run/react";
+import { Form, Link, useCatch, useLoaderData, useTransition } from "@remix-run/react";
 import Alert from "~/components/Alert";
 import BackButton from "~/components/BackButton";
 import CardContainer from "~/components/Cards/CardContainer";
@@ -31,7 +31,7 @@ export const loader = async ({ params, request }: LoaderArgs) => {
             }
         }
     });
-    if (!company) throw new Response(ERROR_RESOURCE_NOT_FOUND, {status: 404});
+    if (!company) throw new Response(ERROR_RESOURCE_NOT_FOUND, { status: 404 });
 
     return json({ company, canDestroy, canEdit, canCreate });
 }
@@ -44,12 +44,12 @@ export const action = async ({ params, request }: ActionArgs) => {
 
     const canDestroy = await hasPermission({ resource: 'company', query: { companyId: params.companyId, userId: userId, destroy: true } });
 
-    if (!canDestroy) throw new Response(ERROR_PERMISSION_DESTROY, {status: 403 });
+    if (!canDestroy) throw new Response(ERROR_PERMISSION_DESTROY, { status: 403 });
 
     const company = await db.company.findUnique({
         where: { id: params.companyId },
     });
-    if (!company) throw new Response(ERROR_RESOURCE_NOT_FOUND, {status: 404});
+    if (!company) throw new Response(ERROR_RESOURCE_NOT_FOUND, { status: 404 });
 
     await db.company.delete({ where: { id: params.companyId } });
     return redirect(`/dashboard/catalogues/show/${company.catalogueId}`);
@@ -58,6 +58,7 @@ export const action = async ({ params, request }: ActionArgs) => {
 export default function Company() {
     const { company, canDestroy, canEdit, canCreate } = useLoaderData<typeof loader>();
     const locations = company.locations;
+    const { state } = useTransition();
 
     return (
         <>
@@ -79,7 +80,7 @@ export default function Company() {
                             {
                                 canDestroy &&
                                 <Form method="post">
-                                    <button className="btn btn-secondary" name="intent" value="delete">Eliminar</button>
+                                    <button disabled={state === 'submitting'} type="submit" className="btn btn-secondary" name="intent" value="delete">Eliminar</button>
                                 </Form>
                             }
                         </div>

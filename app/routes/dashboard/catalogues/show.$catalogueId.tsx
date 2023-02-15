@@ -1,6 +1,6 @@
 import type { ActionArgs, LoaderArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
-import { Form, Link, useCatch, useLoaderData } from "@remix-run/react";
+import { Form, Link, useCatch, useLoaderData, useTransition } from "@remix-run/react";
 import Alert from "~/components/Alert";
 import BackButton from "~/components/BackButton";
 import CardContainer from "~/components/Cards/CardContainer";
@@ -56,6 +56,7 @@ export const action = async ({ params, request }: ActionArgs) => {
 export default function Catalogue() {
     const { catalogue, canDestroy, canEdit, canCreate } = useLoaderData<typeof loader>();
     const companies = catalogue.companies;
+    const { state } = useTransition();
 
     return (
         <>
@@ -77,7 +78,7 @@ export default function Catalogue() {
                             {
                                 canDestroy &&
                                 <Form method="post">
-                                    <button className="btn btn-secondary" name="intent" value="delete">Eliminar</button>
+                                    <button type="submit" disabled={state === 'submitting'} className="btn btn-secondary" name="intent" value="delete">Eliminar</button>
                                 </Form>
                             }
                         </div>

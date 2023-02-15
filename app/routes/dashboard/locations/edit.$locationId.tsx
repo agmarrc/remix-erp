@@ -1,6 +1,6 @@
 import type { ActionArgs, LoaderArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
-import { Form, useActionData, useCatch, useLoaderData, useSubmit } from "@remix-run/react";
+import { Form, useActionData, useCatch, useLoaderData, useSubmit, useTransition } from "@remix-run/react";
 import type { Coordinate } from "ol/coordinate";
 import { useState } from "react";
 import { redirect } from "react-router";
@@ -96,6 +96,7 @@ export const action = async ({ params, request }: ActionArgs) => {
 export default function EditLocation() {
     const { location } = useLoaderData<typeof loader>();
     const actionData = useActionData();
+    const { state } = useTransition();
 
     const submit = useSubmit();
 
@@ -145,7 +146,7 @@ export default function EditLocation() {
                     <FormError error={locationError} />
                 </div>
                 <div className="modal-action mt-20">
-                    <button type="submit" className="btn btn-primary">Guardar</button>
+                    <button disabled={state === 'submitting'} type="submit" className="btn btn-primary">Guardar</button>
                 </div>
                 <FormError error={actionData?.formError} />
             </Form>

@@ -1,7 +1,7 @@
 import type { ActionArgs, LoaderArgs } from "@remix-run/node";
 import { redirect } from "@remix-run/node";
 import { json } from "@remix-run/node";
-import { Form, Link, useCatch, useLoaderData } from "@remix-run/react";
+import { Form, Link, useCatch, useLoaderData, useTransition } from "@remix-run/react";
 import Alert from "~/components/Alert";
 import BackButton from "~/components/BackButton";
 import CardContainer from "~/components/Cards/CardContainer";
@@ -53,6 +53,8 @@ export const action = async ({ params, request }: ActionArgs) => {
 
 export default function ShowLocation() {
     const { location, canEdit, canDestroy, canCreate } = useLoaderData<typeof loader>();
+    const { state } = useTransition();
+
     const modules = location.modules;
 
     return (
@@ -77,7 +79,7 @@ export default function ShowLocation() {
                             {
                                 canDestroy &&
                                 <Form method="post">
-                                    <button className="btn btn-secondary" name="intent" value="delete">Eliminar</button>
+                                    <button disabled={state === 'submitting'} type="submit" className="btn btn-secondary" name="intent" value="delete">Eliminar</button>
                                 </Form>
                             }
                         </div>

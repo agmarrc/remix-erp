@@ -1,6 +1,6 @@
 import type { ActionArgs, LoaderArgs } from "@remix-run/node";
 import { redirect } from "@remix-run/node";
-import { Form, useActionData, useCatch, useParams } from "@remix-run/react";
+import { Form, useActionData, useCatch, useParams, useTransition } from "@remix-run/react";
 import Alert from "~/components/Alert";
 import BackButton from "~/components/BackButton";
 import FormError from "~/components/FormError";
@@ -94,6 +94,7 @@ export const action = async ({ params, request }: ActionArgs) => {
 export default function NewCompany() {
     const actionData = useActionData<typeof action>();
     const params = useParams();
+    const { state } = useTransition();
 
     return (
         <div>
@@ -110,7 +111,7 @@ export default function NewCompany() {
                     <FormError error={actionData?.fieldErrors?.workers} />
                 </div>
                 <div className="modal-action mt-20">
-                    <button type="submit" className="btn btn-primary">Guardar</button>
+                    <button disabled={state === 'submitting'} type="submit" className="btn btn-primary">Guardar</button>
                 </div>
                 <FormError error={actionData?.formError} />
             </Form>

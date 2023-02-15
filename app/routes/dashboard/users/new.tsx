@@ -1,5 +1,5 @@
 import type { ActionArgs, LoaderArgs } from "@remix-run/node";
-import { Form, useActionData } from "@remix-run/react";
+import { Form, useActionData, useTransition } from "@remix-run/react";
 import { redirect } from "react-router";
 import BackButton from "~/components/BackButton";
 import FormError from "~/components/FormError";
@@ -101,7 +101,9 @@ export const action = async ({ request }: ActionArgs) => {
 }
 
 export default function NewUser() {
-    const actionData = useActionData<typeof action>()
+    const actionData = useActionData<typeof action>();
+    const { state } = useTransition();
+
     return (
         <div>
             <BackButton uri={`/dashboard/users`} />
@@ -136,7 +138,7 @@ export default function NewUser() {
                     </label>
                     <FormError error={actionData?.fieldErrors?.isAdmin} />
                 </div>
-                <button className="btn btn-primary">Crear usuario</button>
+                <button disabled={state === 'submitting'} type="submit" className="btn btn-primary">Crear usuario</button>
                 <FormError error={actionData?.formError} />
             </Form>
         </div>

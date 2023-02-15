@@ -1,6 +1,6 @@
 import type { ActionArgs, LoaderArgs } from "@remix-run/node";
 import { redirect } from "@remix-run/node";
-import { Form, useActionData, useCatch } from "@remix-run/react";
+import { Form, useActionData, useCatch, useTransition } from "@remix-run/react";
 import Alert from "~/components/Alert";
 import BackButton from "~/components/BackButton";
 import FormError from "~/components/FormError";
@@ -21,7 +21,7 @@ export const loader = async ({ request }: LoaderArgs) => {
 
     const canCreate = await hasPermission({ resource: 'catalogue', query: { userId: userId, create: true } })
 
-    if (!canCreate) throw new Response(ERROR_PERMISSION_CREATE, {status: 403});
+    if (!canCreate) throw new Response(ERROR_PERMISSION_CREATE, { status: 403 });
 
     return null;
 }
@@ -60,6 +60,7 @@ export const action = async ({ request }: ActionArgs) => {
 
 export default function NewCatalogue() {
     const actionData = useActionData<typeof action>();
+    const { state } = useTransition();
 
     return (
         <div>
@@ -71,7 +72,7 @@ export default function NewCatalogue() {
                     <FormError error={actionData?.fieldErrors?.name} />
                 </div>
                 <div className="modal-action">
-                    <button type="submit" className="btn btn-primary">Guardar</button>
+                    <button disabled={state === 'submitting'} type="submit" className="btn btn-primary">Guardar</button>
                 </div>
                 <FormError error={actionData?.formError} />
             </Form>

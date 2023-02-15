@@ -1,6 +1,6 @@
-import type { ActionArgs, LoaderArgs} from "@remix-run/node";
+import type { ActionArgs, LoaderArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
-import { Form, Link, useActionData } from "@remix-run/react";
+import { Form, Link, useActionData, useTransition } from "@remix-run/react";
 import FormError from "~/components/FormError";
 
 import { badRequest } from "~/utils/request.server";
@@ -68,6 +68,7 @@ export const action = async ({ request }: ActionArgs) => {
 
 export default function Login() {
     const actionData = useActionData<typeof action>();
+    const { state } = useTransition();
 
     return (
         <div className="hero min-h-screen bg-base-200">
@@ -96,7 +97,7 @@ export default function Login() {
                                 <Link to="/auth/recovery" className="label-text-alt link link-hover">¿Olvidaste tu contraseña?</Link>
                             </label>
                             <div className="form-control mt-6">
-                                <button className="btn btn-primary">Iniciar sesión</button>
+                                <button type="submit" disabled={state === 'submitting'} className="btn btn-primary">Iniciar sesión</button>
                             </div>
                             <FormError error={actionData?.formError} />
                         </Form>

@@ -1,5 +1,5 @@
 import type { ActionArgs, LoaderArgs } from "@remix-run/node";
-import { Form, useActionData } from "@remix-run/react";
+import { Form, useActionData, useTransition } from "@remix-run/react";
 import { redirect } from "react-router";
 import FormError from "~/components/FormError";
 import { db } from "~/utils/db.server";
@@ -82,6 +82,7 @@ export const action = async ({ params, request }: ActionArgs) => {
 
 export default function Reset() {
     const actionData = useActionData<typeof action>();
+    const { state } = useTransition();
 
     return (
         <div className="hero min-h-screen bg-base-200">
@@ -107,7 +108,7 @@ export default function Reset() {
                                 <FormError error={actionData?.fieldErrors?.confirmPassword} />
                             </div>
                             <div className="form-control mt-6">
-                                <button className="btn btn-primary">Restablecer</button>
+                                <button type="submit" disabled={state === 'submitting'} className="btn btn-primary">Restablecer</button>
                             </div>
                             <FormError error={actionData?.formError} />
                         </Form>

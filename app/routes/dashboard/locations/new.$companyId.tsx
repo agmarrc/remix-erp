@@ -1,6 +1,6 @@
 import type { ActionArgs, LoaderArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
-import { Form, Link, useActionData, useCatch, useLoaderData, useParams, useSubmit } from "@remix-run/react";
+import { Form, Link, useActionData, useCatch, useLoaderData, useParams, useSubmit, useTransition } from "@remix-run/react";
 import type { Coordinate } from "ol/coordinate";
 import React, { useState } from "react";
 import Alert from "~/components/Alert";
@@ -96,6 +96,7 @@ export default function NewCompany() {
     const { companies } = useLoaderData<typeof loader>();
     const actionData = useActionData<typeof action>();
     const params = useParams();
+    const { state } = useTransition();
 
     const submit = useSubmit();
 
@@ -153,7 +154,7 @@ export default function NewCompany() {
                     <FormError error={locationError} />
                 </div>
                 <div className="modal-action mt-20">
-                    <button type="submit" className="btn btn-primary">Guardar</button>
+                    <button disabled={state === 'submitting'} type="submit" className="btn btn-primary">Guardar</button>
                 </div>
                 <FormError error={actionData?.formError} />
             </Form>
