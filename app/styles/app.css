@@ -3380,12 +3380,12 @@ html {
   border-bottom-right-radius: var(--rounded-box, 1rem);
 }
 
-.m-6 {
-  margin: 1.5rem;
-}
-
 .m-2 {
   margin: 0.5rem;
+}
+
+.m-6 {
+  margin: 1.5rem;
 }
 
 .mx-2 {

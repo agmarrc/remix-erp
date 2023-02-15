@@ -1,5 +1,6 @@
 import type { Module, ModulePermission } from "@prisma/client";
 import { Form } from "@remix-run/react";
+import { useState } from "react";
 import FormError from "../FormError";
 
 type Permission = ModulePermission & {
@@ -38,6 +39,8 @@ function PermissionDetail({ permission }: PermissionProps) {
 }
 
 export default function ModulePermissions({ actionData, permissions, resources }: Props) {
+    const [modalOpen, setModalOpen] = useState(false);
+
     return (
         <div>
             <div className="flex items-center justify-between">
@@ -48,7 +51,7 @@ export default function ModulePermissions({ actionData, permissions, resources }
                 ? <p>Sin permisos</p>
                 : permissions.map((permission) => <PermissionDetail key={permission.id} permission={permission} />)}
 
-            <input type="checkbox" id="newModulePermissionModal" className="modal-toggle" />
+            <input onChange={() => setModalOpen(true)} type="checkbox" id="newModulePermissionModal" className="modal-toggle" checked={modalOpen} />
             <div className="modal">
                 <div className="modal-box">
                     <Form method="post">
@@ -78,8 +81,8 @@ export default function ModulePermissions({ actionData, permissions, resources }
                         </div>
                         <input type="hidden" name="permission" value="module" />
                         <div className="modal-action">
-                            <label htmlFor="newModulePermissionModal" className="btn">Cerrar</label>
-                            <button className="btn btn-primary">Guardar</button>
+                            <button className="btn" type="button" onClick={() => setModalOpen(false)}>Cerrar</button>
+                            <button className="btn btn-primary" onClick={() => setModalOpen(false)}>Guardar</button>
                         </div>
                         <FormError error={actionData?.formError} />
                     </Form>

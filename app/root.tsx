@@ -5,7 +5,6 @@ import {
   Meta,
   Outlet,
   Scripts,
-  ScrollRestoration,
 } from "@remix-run/react";
 import { APP_TITLE } from "./data/constants";
 

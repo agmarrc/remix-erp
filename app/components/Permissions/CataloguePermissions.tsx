@@ -1,5 +1,6 @@
 import type { Catalogue, CataloguePermission } from "@prisma/client";
 import { Form } from "@remix-run/react";
+import { useState } from "react";
 import FormError from "../FormError";
 
 type Permission = CataloguePermission & {
@@ -38,6 +39,8 @@ function PermissionDetail({ permission }: PermissionProps) {
 }
 
 export default function CataloguePermissions({ actionData, permissions, resources }: Props) {
+    const [modalOpen, setModalOpen] = useState(false);
+
     return (
         <div>
             <div className="flex items-center justify-between">
@@ -48,7 +51,7 @@ export default function CataloguePermissions({ actionData, permissions, resource
                 ? <p>Sin permisos</p>
                 : permissions.map((permission) => <PermissionDetail permission={permission} key={permission.id} />)}
 
-            <input type="checkbox" id="newCataloguePermissionModal" className="modal-toggle" />
+            <input onChange={() => setModalOpen(true)} type="checkbox" id="newCataloguePermissionModal" className="modal-toggle" checked={modalOpen} />
             <div className="modal">
                 <div className="modal-box">
                     <Form method="post">
@@ -78,8 +81,8 @@ export default function CataloguePermissions({ actionData, permissions, resource
                         </div>
                         <input type="hidden" name="permission" value="catalogue" />
                         <div className="modal-action">
-                            <label htmlFor="newCataloguePermissionModal" className="btn">Cerrar</label>
-                            <button className="btn btn-primary">Guardar</button>
+                            <button className="btn" type="button" onClick={() => setModalOpen(false)}>Cerrar</button>
+                            <button className="btn btn-primary" onClick={() => setModalOpen(false)}>Guardar</button>
                         </div>
                         <FormError error={actionData?.formError} />
                     </Form>
