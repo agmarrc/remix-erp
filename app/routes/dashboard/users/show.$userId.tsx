@@ -94,7 +94,7 @@ export const action = async ({ params, request }: ActionArgs) => {
                 where: { userId: params.userId },
                 data: { create }
             });
-            return redirect(`/dashboard/users/show/${params.userId}`);
+            break;
         }
         case 'company': {
             await db.companyPermission.deleteMany({
@@ -107,7 +107,7 @@ export const action = async ({ params, request }: ActionArgs) => {
                 where: { userId: params.userId },
                 data: { create }
             });
-            return redirect(`/dashboard/users/show/${params.userId}`);
+            break;
         }
         case 'location': {
             await db.locationPermission.deleteMany({
@@ -120,7 +120,7 @@ export const action = async ({ params, request }: ActionArgs) => {
                 where: { userId: params.userId },
                 data: { create }
             });
-            return redirect(`/dashboard/users/show/${params.userId}`);
+            break;
         }
         case 'module': {
             await db.modulePermission.deleteMany({
@@ -133,12 +133,10 @@ export const action = async ({ params, request }: ActionArgs) => {
                 where: { userId: params.userId },
                 data: { create }
             });
-            return redirect(`/dashboard/users/show/${params.userId}`);
-        }
-        default: {
-            throw new Response(ERROR_RESOURCE_NOT_FOUND, { status: 404 });
+            break;
         }
     }
+    return redirect(`/dashboard/users/show/${params.userId}`);
 }
 
 export default function ShowUser() {

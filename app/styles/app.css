@@ -3384,6 +3384,10 @@ html {
   margin: 1.5rem;
 }
 
+.m-2 {
+  margin: 0.5rem;
+}
+
 .mx-2 {
   margin-left: 0.5rem;
   margin-right: 0.5rem;
@@ -3622,6 +3626,10 @@ html {
   padding: 0.625rem;
 }
 
+.p-4 {
+  padding: 1rem;
+}
+
 .py-6 {
   padding-top: 1.5rem;
   padding-bottom: 1.5rem;
@@ -3754,6 +3762,10 @@ html {
 @media (min-width: 640px) {
   .sm\:flex-row {
     flex-direction: row;
+  }
+
+  .sm\:justify-between {
+    justify-content: space-between;
   }
 
   .sm\:text-sm {

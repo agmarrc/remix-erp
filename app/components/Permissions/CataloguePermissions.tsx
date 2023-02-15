@@ -22,11 +22,17 @@ interface PermissionProps {
 
 function PermissionDetail({ permission }: PermissionProps) {
     return (
-        <div className="flex flex-col sm:flex-row items-center gap-3 my-2">
-            <span className="text-xl">{permission.catalogue.name}</span>
-            <div className={`badge ${permission.create && 'badge-accent'}`}>Crear</div>
-            <div className={`badge ${permission.edit && 'badge-accent'}`}>Editar</div>
-            <div className={`badge ${permission.destroy && 'badge-accent'}`}>Eliminar</div>
+        <div className="flex flex-col sm:flex-row sm:justify-between items-center border p-4 rounded-lg m-2">
+            <div className="flex flex-col sm:flex-row items-center gap-3 my-2">
+                <span className="text-xl">{permission.catalogue.name}</span>
+                <div className={`badge ${permission.create && 'badge-accent'}`}>Crear</div>
+                <div className={`badge ${permission.edit && 'badge-accent'}`}>Editar</div>
+                <div className={`badge ${permission.destroy && 'badge-accent'}`}>Eliminar</div>
+            </div>
+            <Form method="post" action={`/dashboard/permissions/delete/${permission.id}`}>
+                <input type="hidden" name="userId" defaultValue={permission.userId} />
+                <button className="btn btn-sm btn-secondary" name="permission" value="catalogue">Eliminar</button>
+            </Form>
         </div>
     )
 }
@@ -36,7 +42,7 @@ export default function CataloguePermissions({ actionData, permissions, resource
         <div>
             <div className="flex items-center justify-between">
                 <h4 className="text-xl">Catálogos</h4>
-                <label htmlFor="newCataloguePermissionModal" className="btn btn-sm">Gestionar permiso</label>
+                <label htmlFor="newCataloguePermissionModal" className="btn btn-sm">Gestionar permisos</label>
             </div>
             {permissions.length === 0
                 ? <p>Sin permisos</p>

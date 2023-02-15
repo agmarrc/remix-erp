@@ -1,5 +1,5 @@
 import type { Role } from "@prisma/client";
-import { Link } from "@remix-run/react";
+import { Form, Link } from "@remix-run/react";
 
 interface Props {
     users: {
@@ -25,8 +25,9 @@ export default function UsersTable({ users }: Props) {
             <table className="table w-full">
                 <thead>
                     <tr>
-                        <th>Usuario</th>
-                        <th>Rol</th>
+                        <th></th>
+                        <th></th>
+                        <th></th>
                         <th></th>
                     </tr>
                 </thead>
@@ -57,8 +58,13 @@ function TableRow({ user }: RowProps) {
             </td>
             <th>
                 <Link to={`/dashboard/users/show/${user.id}`} className="btn btn-ghost btn-xs">
-                    Ver más
+                    Permisos
                 </Link>
+            </th>
+            <th>
+                <Form action={`/dashboard/users/delete/${user.id}`} method='post'>
+                    <button className="btn btn-ghost btn-xs">Eliminar</button>
+                </Form>
             </th>
         </tr>
     );
