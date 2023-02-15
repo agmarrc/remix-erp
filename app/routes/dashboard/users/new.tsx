@@ -1,8 +1,10 @@
 import type { ActionArgs, LoaderArgs } from "@remix-run/node";
-import { Form, useActionData, useTransition } from "@remix-run/react";
+import { Form, useActionData, useCatch, useTransition } from "@remix-run/react";
 import { redirect } from "react-router";
+import Alert from "~/components/Alert";
 import BackButton from "~/components/BackButton";
 import FormError from "~/components/FormError";
+import { ERROR_UNEXPECTED } from "~/data/constants";
 import { db } from "~/utils/db.server";
 import { badRequest } from "~/utils/request.server";
 import { getUser, register } from "~/utils/session.server";
@@ -136,11 +138,32 @@ export default function NewUser() {
                         <input type="checkbox" name="isAdmin" className="checkbox" />
                         <span className="label-text">Administrador</span>
                     </label>
-                    <FormError error={actionData?.fieldErrors?.isAdmin} />
                 </div>
                 <button disabled={state === 'submitting'} type="submit" className="btn btn-primary">Crear usuario</button>
                 <FormError error={actionData?.formError} />
             </Form>
         </div>
     );
+}
+
+export function CatchBoundary() {
+    const caught = useCatch();
+
+    switch (caught.status) {
+        case 403: {
+            return <Alert type="alert-error">{caught.data}</Alert>
+        }
+        case 404: {
+            return <Alert type="alert-error">{caught.data}</Alert>
+        }
+        default: {
+            throw new Error(`Unhandled error: ${caught.status}`);
+        }
+    }
+}
+
+export function ErrorBoundary() {
+    return (
+        <Alert type="alert-error">{ERROR_UNEXPECTED}</Alert>
+    )
 }

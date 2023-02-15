@@ -29,6 +29,7 @@ export default function UsersTable({ users }: Props) {
                         <th></th>
                         <th></th>
                         <th></th>
+                        <th></th>
                     </tr>
                 </thead>
                 <tbody>
@@ -59,6 +60,11 @@ function TableRow({ user }: RowProps) {
             <th>
                 <Link to={`/dashboard/users/show/${user.id}`} className="btn btn-ghost btn-xs">
                     Permisos
+                </Link>
+            </th>
+            <th>
+                <Link to={`/dashboard/users/edit/${user.id}`} className="btn btn-ghost btn-xs">
+                    Editar
                 </Link>
             </th>
             <th>

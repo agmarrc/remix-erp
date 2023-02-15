@@ -1,17 +1,17 @@
 import type { LoaderArgs } from "@remix-run/node";
-import { json, redirect } from "@remix-run/node";
+import { json } from "@remix-run/node";
 import { Outlet, useLoaderData } from "@remix-run/react";
 import Alert from "~/components/Alert";
 import Navbar from "~/components/Navbar";
 import { ERROR_UNEXPECTED } from "~/data/constants";
-import { getUser, requireUserId } from "~/utils/session.server";
+import { getUser, logout, requireUserId } from "~/utils/session.server";
 
 export const loader = async ({ request }: LoaderArgs) => {
     await requireUserId(request);
 
     const user = await getUser(request);
 
-    if (!user) return redirect('/auth/login');
+    if (!user) return logout(request);
 
     const isAdmin = user.role.privileges === 1 ? true : false;
     return json({isAdmin, name: user.name});
