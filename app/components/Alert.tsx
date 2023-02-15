@@ -8,7 +8,7 @@ interface Props {
 
 export default function Alert({ children, type }: Props) {
     return (
-        <div>
+        <div className="w-3/4">
             <div className={`alert m-6 ${type}  shadow-lg`}>
                 <div>
                     <span>{children}</span>
