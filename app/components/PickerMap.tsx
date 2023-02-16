@@ -8,6 +8,7 @@ import type VectorLayer from "ol/layer/Vector";
 import type VectorSource from "ol/source/Vector";
 import type { Point } from "ol/geom";
 import { generateMarker } from "~/utils/map.client";
+import Alert from '~/components/Alert';
 
 interface Props {
     onPickLocation: (coordinate: Coordinate) => void;
@@ -21,6 +22,7 @@ let marker: VectorLayer<VectorSource<Point>> | null = null;;
 export default function PickerMap({ onPickLocation, hasMarker, longitude, latitude }: Props) {
     const mapRef = useRef(null);
     const [position, setPosition] = useState<Array<number> | null>(null);
+    const [error, setError] = useState(false);
 
     const zoom = 13;
 
@@ -29,7 +31,7 @@ export default function PickerMap({ onPickLocation, hasMarker, longitude, latitu
     useEffect(() => {
         if (!position || !mapRef.current) return;
 
-        const [ longitude, latitude ] = position;
+        const [longitude, latitude] = position;
         const center = [longitude, latitude];
 
         let options = {
@@ -79,11 +81,19 @@ export default function PickerMap({ onPickLocation, hasMarker, longitude, latitu
             setPosition([longitude, latitude]);
         } else {
             navigator.geolocation.getCurrentPosition((position) => {
-                const {longitude, latitude} = position.coords;
+                const { longitude, latitude } = position.coords;
                 setPosition([longitude, latitude]);
-            }, null);
+            }, () => setError(true));
         }
     }, [])
+
+    if (error) {
+        return (
+            <>
+                <Alert type="alert-error" backButton={false}>El permiso a la ubicación es necesario. Concede acceso a ubicación y refresca la aplicación.</Alert>
+            </>
+        );
+    }
 
     return (
         <>
