@@ -6,7 +6,7 @@
     "build:css": "tailwindcss -m -i ./styles/app.css -o app/styles/app.css",
     "dev": "concurrently \"npm run dev:css\" \"remix dev\"",
     "dev:css": "tailwindcss -w -i ./styles/app.css -o app/styles/app.css",
-    "start": "prisma migrate deploy && prisma db seed && remix-serve build",
+    "start": "prisma migrate deploy && remix-serve build",
     "typecheck": "tsc"
   },
   "prisma": {
